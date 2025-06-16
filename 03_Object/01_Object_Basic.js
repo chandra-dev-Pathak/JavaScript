@@ -60,3 +60,21 @@ const student = {
 
 console.log(student.marks.science);
 console.log(student["marks"]["math"]);
+
+// another To way acces Object 
+
+const person = {
+    name: "Raghaw",
+    age: 22,
+    city: "Delhi"
+};
+
+// Looping through keys using `for...in`
+for (let key in person) {
+    console.log(`${key}: ${person[key]}`);
+}
+
+// Getting keys, values, entries
+console.log("Keys:", Object.keys(person));       // ['name', 'age', 'city']
+console.log("Values:", Object.values(person));   // ['Raghaw', 22, 'Delhi']
+console.log("Entries:", Object.entries(person)); // [['name', 'Raghaw'], ...]
