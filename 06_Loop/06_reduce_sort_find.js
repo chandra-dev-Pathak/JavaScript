@@ -72,3 +72,4 @@ console.log("Sorted Asc:", scores); // [1, 5, 25, 40, 100]
 // Sort numbers(descending)
 scores.sort((a, b) => b - a);
 console.log("Sorted Desc:", scores); // [100, 40, 25, 5, 1]
+

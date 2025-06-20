@@ -1,5 +1,4 @@
 // ForEach - loop 
-// USAGE: "for...of" is used for iterables(arrays,sets,maps,strings)
 // accept function but with no name 
 // forEach never return use filter that Returns
 
