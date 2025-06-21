@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--  channing_content.html
+      Demo: textContent • innerText • innerHTML • outerHTML                -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Content‑Changing Demo</title>
+    <style>
+        body {
+            background: #181818;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            padding: 20px
+        }
+
+        h1,
+        h3 {
+            margin-top: 0
+        }
+
+        section {
+            border: 1px solid #444;
+            padding: 16px;
+            margin-bottom: 18px;
+            border-radius: 6px
+        }
+
+        button {
+            padding: 6px 12px;
+            margin: 6px 4px 0 0;
+            cursor: pointer;
+            border: 0;
+            border-radius: 4px
+        }
+
+        #demo {
+            margin-top: 8px;
+            background: #333;
+            padding: 8px;
+            border-radius: 4px
+        }
+
+        #demo span {
+            display: none
+        }
+
+        /* Hidden span to illustrate innerText vs textContent */
+    </style>
+</head>
+
+<body>
+
+    <h1>DOM Content Properties Demo</h1>
+
+
+    <section>
+        <h3>Target Element:</h3>
+        <div id="demo">
+            Hello <span>Hidden</span> <b>World</b>
+        </div>
+
+        <!-- ─── Buttons: READ current content ───────────────────────────── -->
+        <button id="readTextContent">textContent</button>
+        <button id="readInnerText">innerText</button>
+        <button id="readInnerHTML">innerHTML</button>
+        <button id="readOuterHTML">outerHTML</button>
+
+        <!-- ─── Buttons: WRITE / CHANGE content ─────────────────────────── -->
+        <button id="setTextContent">textContent</button>
+        <button id="setInnerHTML">innerHTML</button>
+        <button id="replaceOuterHTML">outerHTML</button>
+    </section>
+
+    <script>
+        /*********************************************************************
+         * Select the target div once. All actions reuse this reference.
+         *********************************************************************/
+        let target = document.getElementById("demo");
+
+        /* --------------- READ BUTTONS (log current values) --------------- */
+
+        document.getElementById("readTextContent").addEventListener("click", () => {
+            console.log("textContent →", target.textContent);
+            alert(`textContent:\n${target.textContent}`);
+        });
+
+        document.getElementById("readInnerText").addEventListener("click", () => {
+            console.log("innerText →", target.innerText);
+            alert(`innerText:\n${target.innerText}`);
+        });
+
+        document.getElementById("readInnerHTML").addEventListener("click", () => {
+            console.log("innerHTML →", target.innerHTML);
+            alert(`innerHTML:\n${target.innerHTML}`);
+        });
+
+        document.getElementById("readOuterHTML").addEventListener("click", () => {
+            console.log("outerHTML →", target.outerHTML);
+            alert(`outerHTML:\n${target.outerHTML}`);
+        });
+
+        /* --------------- WRITE BUTTONS (modify content) ------------------ */
+
+        // 1) textContent → inserts plain text, tags are escaped
+        document.getElementById("setTextContent").addEventListener("click", () => {
+            target.textContent = "<i>Plain text only — tags will not render</i>";
+        });
+
+        // 2) innerHTML → inserts HTML that the browser parses
+        document.getElementById("setInnerHTML").addEventListener("click", () => {
+            target.innerHTML = "<i style='color:lime'>Now italic & green (via innerHTML)</i>";
+        });
+
+        // 3) outerHTML → replaces the entire element (new node!), we must re‑select it
+        document.getElementById("replaceOuterHTML").addEventListener("click", () => {
+            target.outerHTML = "<p id='demo' style='background:#006dda;padding:8px;border-radius:4px'>Entire element replaced via <b>outerHTML</b></p>";
+            // After outerHTML replacement, the old reference is invalid, so grab it again
+            target = document.getElementById("demo");
+        });
+
+        /* ------------------------------------------------------------------
+           Quick Reference (printed once in console when page loads)
+        ------------------------------------------------------------------ */
+        console.table([
+            { Property: "textContent", What: "Plain text (no tags)", "Shows tags?": "No", "Hidden elems included?": "Yes", Best: "Fast raw text" },
+            { Property: "innerText", What: "Visible text only", "Shows tags?": "No", "Hidden elems included?": "No", Best: "Screen‑visible text" },
+            { Property: "innerHTML", What: "HTML inside element", "Shows tags?": "Yes", "Hidden elems included?": "Yes", Best: "Inject markup" },
+            { Property: "outerHTML", What: "Whole element HTML", "Shows tags?": "Yes", "Hidden elems included?": "Yes", Best: "Replace/copy element" }
+        ]);
+    </script>
+
+</body>
+
+</html>
