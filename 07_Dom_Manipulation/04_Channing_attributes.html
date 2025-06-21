@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!-- 
+     Practice file for attributes: get/set/remove/has + direct 
+-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Attribute Changer</title>
+    <style>
+        body {
+            background: #181818;
+            color: #eee;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1,
+        h3 {
+            margin-top: 0;
+        }
+
+        section {
+            border: 1px solid #444;
+            padding: 16px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 6px 12px;
+            margin: 6px 4px 0 0;
+            cursor: pointer;
+            border: 0;
+            border-radius: 4px;
+        }
+
+        img {
+            width: 180px;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+
+        #showBar {
+            background: #222;
+            margin-top: 14px;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>DOM Attribute </h1>
+
+    <section>
+        <h3>Target Element:</h3>
+        <img id="myImg"
+            src="https://th.bing.com/th/id/OIP.ExUMGcgLhnkYGwDJXWDd1QHaF8?w=2000&h=1607&rs=1&pid=ImgDetMain&cb=idpwebp2&o=7&rm=3"
+            alt="Sample image" title="Nice placeholder" />
+
+        <!-- Read / Write Buttons -->
+        <button id="getAttr">getAttribute('src')</button>
+        <button id="setAttr">setAttribute('src')</button>
+        <button id="removeAttr">removeAttribute('title')</button>
+        <button id="hasAttr">hasAttribute('alt')</button>
+
+        <!-- Direct property access -->
+        <button id="readDirect">Read Direct: img.src</button>
+        <button id="writeDirect">Write Direct: img.alt</button>
+
+        <!-- Show Bar -->
+        <div id="showBar"><strong>Show Bar ( Result show when button click )</strong></div>
+    </section>
+
+    <script>
+        // Utility: show results in the log bar
+        const logToBar = msg => {
+            document.getElementById("showBar").textContent += msg + "\n";
+        };
+
+        const img = document.getElementById("myImg");
+
+        // ─── getAttribute() → read any attribute as a string
+        document.getElementById("getAttr").addEventListener("click", () => {
+            const src = img.getAttribute("src");
+            logToBar("✓ getAttribute('src') → " + src);
+        });
+
+        // ─── setAttribute() → change/update any attribute value
+        document.getElementById("setAttr").addEventListener("click", () => {
+            img.setAttribute("src", "https://thewire.signingdaysports.com/wp-content/uploads/IMG-Academy-1.jpg");
+            logToBar("✓ setAttribute('src', kitten...) → image updated");
+        });
+
+        // ─── removeAttribute() → delete a named attribute
+        document.getElementById("removeAttr").addEventListener("click", () => {
+            img.removeAttribute("title");
+            logToBar("✓ removeAttribute('title') → removed");
+        });
+
+        // ─── hasAttribute() → true/false if attribute exists
+        document.getElementById("hasAttr").addEventListener("click", () => {
+            const hasAlt = img.hasAttribute("alt");
+            logToBar("✓ hasAttribute('alt') → " + hasAlt);
+        });
+
+        // ─── Direct property read (not from HTML, from JS live value)
+        document.getElementById("readDirect").addEventListener("click", () => {
+            const realSrc = img.src;
+            logToBar("📌 Direct read: img.src → " + realSrc);
+        });
+
+        // ─── Direct property write
+        document.getElementById("writeDirect").addEventListener("click", () => {
+            img.alt = "A lovely kitten 🐱";
+            logToBar("📌 Direct write: img.alt = 'A lovely kitten'");
+        });
+
+        // ─── Console Quick Table
+        console.table([
+            { Method: "getAttribute('src')", What: "Reads raw attribute from HTML" },
+            { Method: "setAttribute('attr', val)", What: "Sets or updates the attribute" },
+            { Method: "removeAttribute('name')", What: "Removes given attribute" },
+            { Method: "hasAttribute('name')", What: "Checks if attribute exists" },
+            { Method: "img.src", What: "JS property (resolved full URL)" },
+            { Method: "img.alt = '...'", What: "Sets alt directly" }
+        ]);
+    </script>
+
+</body>
+
+</html>
