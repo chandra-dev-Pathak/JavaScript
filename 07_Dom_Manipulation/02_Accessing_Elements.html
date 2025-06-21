@@ -1,0 +1,71 @@
+<!-- Use querySelector / querySelectorAll for more flexibility with CSS selectors.
+
+Use getElementById for speed and simplicity if you know the ID is unique. -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Access Elements</title>
+</head>
+
+<body style="background-color: black; color:white;">
+
+    <h1 id="main-heading">Access Me</h1>
+    <p class="text">Para 1</p>
+    <p class="text">Para 2</p>
+    <button class="btn">Click 1</button>
+    <button class="btn">Click 2</button>
+
+    <script>
+        // --------------------------------------------------------
+        // ID:- document.getElementById("id")
+        // Selects a single element using its unique id attribute.
+        // return:-
+        // A single HTMLElement or null if not found
+        // Not an array or collection — just one element
+        // Best for: When you want to get one unique item on the page.
+
+        const heading = document.getElementById("main-heading");
+        console.log("ID:", heading);
+
+        // --------------------------------------------------------
+        // Class:- document.getElementsByClassName("className")
+        // Gets all elements with a specific class name.
+        // Return:- HTMLCollection (array-like, live list)
+        // Best for: When you want to work with multiple elements having the same class.
+
+        const paragraphs = document.getElementsByClassName("text");
+        console.log("Class:", paragraphs);
+
+        // --------------------------------------------------------
+        // Tag:- document.getElementsByTagName("tagName")
+        // Selects all elements on the page with a specific HTML tag name — like "p", "div", "li", etc.
+        // Returns:-
+        // A live HTMLCollection of all matching elements.
+        // It updates automatically if new elements are added or removed from the DOM.
+
+        const allPs = document.getElementsByTagName("p");
+        console.log("Tag:", allPs);
+
+        // --------------------------------------------------------
+        // QuerySelector:- document.querySelector("CSS_selector")
+        // Selects the first element that matches a CSS selector.
+        // Return:- HTMLElement or null
+        // Best for: Selecting single element using any CSS selector.
+        const firstBtn = document.querySelector(".btn");
+        console.log("querySelector:", firstBtn);
+
+        // --------------------------------------------------------
+        // QuerySelectorAll:- document.querySelectorAll("CSS_selector")
+        // Selects all elements that match a CSS selector.
+        // Returns:- NodeList (not live, supports forEach())
+        // Best for: Looping through multiple matched elements.
+
+        const allBtns = document.querySelectorAll(".btn");
+        console.log("querySelectorAll:", allBtns);
+    </script>
+
+</body>
+
+</html>

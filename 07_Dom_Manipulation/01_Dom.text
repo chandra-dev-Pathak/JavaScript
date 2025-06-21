@@ -1,0 +1,58 @@
+- What is the DOM?
+
+- Accessing Elements
+
+- Changing Content and Attributes
+
+- Changing Styles and Classes
+
+- Creating and Removing Elements
+
+- Event Listeners and Handling Events
+
+- Traversing the DOM
+
+- DOM Best Practices and Tips
+
+Topic 1: What is the DOM?
+
+----------------------------------------------- 
+
+💡 What is DOM?
+
+DOM stands for Document Object Model.
+
+It is a tree-like structure created by the browser when an HTML page is loaded.
+
+It represents all HTML elements as JavaScript objects.
+
+JavaScript can read, change, add, or delete HTML elements using the DOM.
+
+----------------------------
+
+Think of It Like This:
+
+HTML is like a blueprint.
+
+The browser reads it and creates a live structure (DOM) in memory.
+
+JavaScript can then interact with this live structure, and make change in this structure.
+
+<body>
+  <h1>Hello!</h1>
+  <p>This is a paragraph.</p>
+</body>
+
+DOM Tree:- 
+
+Document
+ └── html
+     └── body
+         ├── h1
+         └── p
+
+DOM = Live representation of HTML
+
+JavaScript uses it to change how your page looks and behaves
+
+It's the bridge between static HTML and interactive pages
