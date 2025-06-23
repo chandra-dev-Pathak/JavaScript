@@ -12,8 +12,6 @@
 
 - Traversing the DOM
 
-- DOM Best Practices and Tips
-
 Topic 1: What is the DOM?
 
 ----------------------------------------------- 
@@ -63,10 +61,26 @@ JavaScript uses the DOM to read, manipulate, and react to HTML content dynamical
 
 Dom is very Very important for interactivity, UI control, and dynamic content.
 
-// Root of DOM:-
-
+// Root of DOM
   console.log(document); // Entire DOM
   console.log(document.body); // <body> element
   console.log(document.body.children); // All direct children of body
   console.log(document.body.firstElementChild); // <h1
-  
+
+  Type of nodes in Dom:-
+
+  - Text node
+  - Comment node
+  - Element node
+  - childNodes
+  - parentNode
+  - nodeType
+  - Attribute node
+  - Document node
+  - firstChild
+  - LastChild
+  - nextSibling
+  - Children
+  - Dom Node Classes
+  - All Html Elements Are Element Nodes
+  - Root node
