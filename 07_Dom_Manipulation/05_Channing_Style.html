@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Style Demo</title>
+</head>
+
+<body>
+    <h1 id="demo">Hello</h1>
+
+    <script>
+        // 1. Select the element
+        let heading = document.querySelector("#demo");
+
+        // 2. Apply single inline style using camelCase syntax
+        // Use when applying one property
+        heading.style.backgroundColor = "red";
+
+        // 3. Apply multiple inline styles using cssText
+        // Note: use kebab-case like CSS, not camelCase
+        heading.style.cssText += "padding: 14px; border-radius: 12px;";
+
+        // 4. Read FINAL computed style using getComputedStyle()
+        // This gives the value after all CSS (inline, file, classes) is applied
+        //  Why use getComputedStyle ?
+        // Use this to read actual applied style that browser renders on screen,
+        // including styles from external CSS files or inherited ones.
+        const cs = getComputedStyle(heading);
+        console.log("Background Color:", cs.backgroundColor);
+        console.log("Padding:", cs.padding);
+
+        // 5. Apply style using setProperty()
+        // Best for advanced control or working with CSS variables
+        // Set a normal style:
+        heading.style.setProperty("font-size", "58px");
+
+        // Set a CSS variable (you can use it in CSS like: var(--accent))
+        heading.style.setProperty("--accent", "lime");
+
+        // 6. Remove a specific inline style using removeProperty()
+        // Use kebab-case property name as string
+        // Very useful if you want to undo/remove an applied style
+        heading.style.removeProperty("font-size");  // removes red background
+
+        // Log important final computed styles to console
+        console.log("Font Size:", cs.fontSize);
+        console.log("Border Radius:", cs.borderRadius);
+        console.log("Text Display:", cs.display);
+
+    </script>
+</body>
+
+</html>
