@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>3.5 Dataset and data-* Attributes</title>
+</head>
+
+<body>
+    <!-- ✅ What is it?
+       data-* attributes are custom HTML attributes that let you store extra data in elements.
+       You can access this data in JavaScript using the `.dataset` property. -->
+
+    <!-- 📌 Example HTML -->
+    <div id="userCard" data-user-id="42" data-role="admin" data-active="true"></div>
+
+    <script>
+        // ✅ Accessing data-* in JavaScript
+        const card = document.getElementById('userCard');
+
+        console.log(card.dataset.userId);   // "42"
+        console.log(card.dataset.role);     // "admin"
+        console.log(card.dataset.active);   // "true"
+
+        // 💡 Note:
+        // All values returned are strings
+        // HTML Attribute -> JavaScript Access (camelCase)
+        // data-user-id   -> card.dataset.userId
+        // data-role      -> card.dataset.role
+        // data-active    -> card.dataset.active
+
+        // ✅ Modifying data-* Attributes
+        card.dataset.role = 'superadmin';   // updates data-role="superadmin"
+        card.dataset.newValue = 'test';     // adds new data-new-value="test"
+
+        // ✅ Deleting data-* Attributes
+        delete card.dataset.active;         // removes data-active
+        // OR
+        card.removeAttribute('data-active');
+
+        // 🔍 Returns & Structure
+        console.log(card.dataset);
+        // Output:
+        // {
+        //   userId: "42",
+        //   role: "superadmin",
+        //   newValue: "test"
+        // }
+
+        // ⚠️ All keys/values are returned as strings
+        // You must manually convert them to boolean/number if needed
+        const isActive = card.dataset.active === "true";       // convert to boolean
+        const userId = parseInt(card.dataset.userId);          // convert to number
+
+        // ⚠️ Things to Remember:
+        // - Attribute name must start with "data-" (e.g., data-user-id)
+        // - In HTML: use kebab-case → data-user-id
+        // - In JavaScript: access via camelCase → dataset.userId
+        // - Don't store sensitive data in data-* attributes (they're visible in dev tools)
+
+        // ✅ Summary:
+        // Feature       | Explanation
+        // --------------|---------------------------------------------
+        // What it is    | Custom data storage in HTML elements
+        // Access method | element.dataset.propertyName
+        // Returns       | All values are strings
+        // Use-case      | Configs, roles, flags, IDs, component data
+        // Safe?         | ✅ Yes, semantic and standards-compliant
+    </script>
+</body>
+
+</html>
