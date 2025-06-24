@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Creation & Insertion – All Methods Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f5f5f5
+        }
+
+        h1 {
+            color: #2c3e50
+        }
+
+        section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1)
+        }
+
+        button {
+            margin: 5px 5px 10px 0;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3498db;
+            color: #fff
+        }
+
+        button:hover {
+            background: #2980b9
+        }
+
+        .output {
+            padding: 10px;
+            border: 1px dashed #bbb;
+            margin-top: 10px;
+            background: #fafafa
+        }
+
+        .explain {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px
+        }
+
+        .card {
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #ecf0f1;
+            margin: 6px 0
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>DOM Create & Insert Methods – Single Page Demo</h1>
+
+    <!-- 1. document.createElement() -->
+    <section>
+        <h2>1️⃣ document.createElement()</h2>
+        <p class="explain">
+            <strong>Definition&nbsp;:</strong> Creates a new <em>element node</em> in memory.<br>
+            <strong>Signature&nbsp;:</strong> <code>document.createElement(tagName)</code><br>
+            <strong>Returns&nbsp;:</strong> The newly-created element (not yet in DOM).
+        </p>
+        <button onclick="demoCreateElement()">Create & Append Card</button>
+        <div id="createElOut" class="output"></div>
+    </section>
+
+    <!-- 2. document.createTextNode() -->
+    <section>
+        <h2>2️⃣ document.createTextNode()</h2>
+        <p class="explain">
+            Creates a pure <em>Text node</em> (safe, no HTML parsing).<br>
+            <code>document.createTextNode(text)</code> → returns a <strong>Text</strong> node.
+        </p>
+        <button onclick="demoCreateTextNode()">Add Text Node</button>
+        <div id="textNodeOut" class="output"></div>
+    </section>
+
+    <!-- 3. appendChild() / prepend() -->
+    <section>
+        <h2>3️⃣ appendChild() & prepend()</h2>
+        <p class="explain">
+            <code>parent.appendChild(child)</code> → inserts <em>at end</em>.<br>
+            <code>parent.prepend(child)</code> → inserts <em>at beginning</em>.
+        </p>
+        <button onclick="addBottom()">appendChild → Bottom</button>
+        <button onclick="addTop()">prepend → Top</button>
+        <ul id="listOut" class="output"></ul>
+    </section>
+
+    <!-- 4. insertBefore() -->
+    <section>
+        <h2>4️⃣ insertBefore()</h2>
+        <p class="explain">
+            Precise insertion before a reference node.<br>
+            <code>parent.insertBefore(newNode, referenceNode)</code>
+        </p>
+        <button onclick="insertPriority()">Insert Before 2nd Item</button>
+        <ul id="beforeList" class="output">
+            <li class="card">Item&nbsp;1</li>
+            <li class="card" id="refItem">Item&nbsp;2</li>
+            <li class="card">Item&nbsp;3</li>
+        </ul>
+    </section>
+
+    <!-- 5. insertAdjacentHTML() / insertAdjacentElement() -->
+    <section>
+        <h2>5️⃣ insertAdjacentHTML() & insertAdjacentElement()</h2>
+        <p class="explain">
+            Insert relative to an element with four positions.<br>
+            HTML → <code>element.insertAdjacentHTML(pos, html)</code><br>
+            Node → <code>element.insertAdjacentElement(pos, node)</code>
+        </p>
+        <button onclick="insertAdjacentHTMLDemo()">Add HTML afterbegin</button>
+        <button onclick="insertAdjacentElementDemo()">Add Element afterend</button>
+        <div id="adjacentBox" class="output card">Target Box</div>
+    </section>
+
+    <!-- 6. cloneNode() (shallow vs deep) -->
+    <section>
+        <h2>6️⃣ cloneNode()</h2>
+        <p class="explain">
+            Duplicate a node.<br>
+            <code>original.cloneNode(<strong>true</strong>)</code> → deep clone (element + children)<br>
+            <code>original.cloneNode(<strong>false</strong>)</code> → shallow clone (element only)
+        </p>
+        <button onclick="cloneCard(true)">Deep Clone Card</button>
+        <button onclick="cloneCard(false)">Shallow Clone Card</button>
+        <div id="cloneTemplate" class="card">🌟 Template Card</div>
+        <div id="cloneOut" class="output"></div>
+    </section>
+
+    <script>
+        // 1. createElement() demo
+        function demoCreateElement() {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.textContent = '🎉 Created with createElement';
+            document.getElementById('createElOut').appendChild(card);
+        }
+
+        // 2. createTextNode() demo
+        function demoCreateTextNode() {
+            const p = document.createElement('p');
+            const txt = document.createTextNode('🚀 This is a pure text node (safe).');
+            p.appendChild(txt);
+            document.getElementById('textNodeOut').appendChild(p);
+        }
+
+        // 3. appendChild / prepend demo
+        function addBottom() {
+            const li = document.createElement('li');
+            li.textContent = 'Added at bottom';
+            li.className = 'card';
+            document.getElementById('listOut').appendChild(li);
+        }
+        function addTop() {
+            const li = document.createElement('li');
+            li.textContent = 'Added at top';
+            li.className = 'card';
+            document.getElementById('listOut').prepend(li);
+        }
+
+        // 4. insertBefore() demo
+        function insertPriority() {
+            const li = document.createElement('li');
+            li.textContent = '⚡ Priority Item';
+            li.style.color = 'red';
+            li.className = 'card';
+            const list = document.getElementById('beforeList');
+            const ref = document.getElementById('refItem');
+            list.insertBefore(li, ref);
+        }
+
+        // 5A. insertAdjacentHTML demo
+        function insertAdjacentHTMLDemo() {
+            const html = '<span style="color:green;">[HTML inserted at TOP]</span>';
+            document.getElementById('adjacentBox').insertAdjacentHTML('afterbegin', html);
+        }
+
+        // 5B. insertAdjacentElement demo
+        function insertAdjacentElementDemo() {
+            const badge = document.createElement('span');
+            badge.textContent = '[Elem after box]';
+            badge.style.background = '#ffd54f';
+            badge.style.padding = '2px 4px';
+            badge.style.marginLeft = '6px';
+            document.getElementById('adjacentBox')
+                .insertAdjacentElement('afterend', badge);
+        }
+
+        // 6. cloneNode demo
+        function cloneCard(isDeep) {
+            const template = document.getElementById('cloneTemplate');
+            const copy = template.cloneNode(isDeep);
+            if (copy.id) copy.removeAttribute('id');   // avoid duplicate IDs
+            copy.style.background = isDeep ? '#d1f7c4' : '#f7d1d1';
+            copy.textContent += isDeep ? ' (Deep Copy)' : ' (Shallow Copy)';
+            document.getElementById('cloneOut').appendChild(copy);
+        }
+    </script>
+
+</body>
+
+</html>
