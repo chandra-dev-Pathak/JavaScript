@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Changing Style by classList</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 40px;
+        }
+
+        /* The main box we'll be styling */
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: lightgray;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        /* Will be added/removed with classList.add/remove */
+        .active {
+            background-color: lightgreen;
+            border-color: green;
+        }
+
+        /* Will be toggled to show glow */
+        .highlight {
+            box-shadow: 0 0 10px 2px gold;
+        }
+
+        /* Rounded border */
+        .rounded {
+            border-radius: 16px;
+        }
+
+        /* Style for all buttons */
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>DOM classList Manipulation Demo</h2>
+
+    <!-- Target box for all styling operations -->
+    <div id="box" class="box">Box</div>
+
+    <!-- Buttons to trigger classList methods -->
+    <button onclick="addClass()">Add 'active'</button>
+    <button onclick="removeClass()">Remove 'active'</button>
+    <button onclick="toggleHighlight()">Toggle 'highlight'</button>
+    <button onclick="checkClass()">Check 'rounded'</button>
+    <button onclick="toggleRounded()">Toggle 'rounded'</button>
+
+    <script>
+        // Selecting the target div
+        const box = document.getElementById('box');
+
+        // METHOD 1: classList.add()
+        // ➕ Adds the class "active" to the box.
+        // ✅ Adds green background and green border.
+        function addClass() {
+            box.classList.add('active');
+        }
+
+        // METHOD 2: classList.remove()
+        // ➖ Removes the class "active" from the box.
+        // ✅ Resets to default lightgray background and gray border.
+        function removeClass() {
+            box.classList.remove('active');
+        }
+
+        // METHOD 3: classList.toggle()
+        // 🔁 Toggles the class "highlight" on and off.
+        // ✅ Adds/removes golden glow around the box.
+        function toggleHighlight() {
+            box.classList.toggle('highlight');
+        }
+
+        // METHOD 4: classList.contains()
+        // 🔍 Checks if the box has the class "rounded"
+        // ✅ Shows alert: if it's present or not.
+        function checkClass() {
+            if (box.classList.contains('rounded')) {
+                alert("✅ 'rounded' class is present.");
+            } else {
+                alert("❌ 'rounded' class is NOT present.");
+            }
+        }
+
+        // METHOD 5: classList.toggle() again
+        // 🔁 Adds/removes the class "rounded"
+        // ✅ Box corners will become rounded or square again.
+        function toggleRounded() {
+            box.classList.toggle('rounded');
+        }
+    </script>
+
+</body>
+
+</html>
