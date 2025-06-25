@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Removing & Replacing – Complete Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f5f5f5
+        }
+
+        section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 22px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .12)
+        }
+
+        h1 {
+            color: #2c3e50
+        }
+
+        h2 {
+            margin-top: 0
+        }
+
+        button {
+            margin: 6px 6px 12px 0;
+            padding: 7px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3498db;
+            color: #fff;
+            font-size: 14px
+        }
+
+        button:hover {
+            background: #2980b9
+        }
+
+        .output {
+            padding: 10px;
+            border: 1px dashed #bbb;
+            margin-top: 12px;
+            background: #fafafa
+        }
+
+        .explain {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px
+        }
+
+        .card {
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #ecf0f1;
+            margin: 5px 0
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>DOM Removing & Replacing – All Methods in One Page</h1>
+
+    <!-- 1. removeChild() -->
+    <section>
+        <h2>1️⃣ removeChild()</h2>
+        <p class="explain">
+            <strong>Definition :</strong> <code>parent.removeChild(child)</code> — removes a specific child node and
+            <em>returns</em> that node.<br>
+            <strong>Takes :</strong> parent node, child node &nbsp;•&nbsp; <strong>Returns :</strong> removed node.<br>
+            See three patterns below.
+        </p>
+
+        <!-- Buttons / demos -->
+        <button onclick="removeBanana()">Remove “Banana”</button>
+        <button onclick="clearFruit()">Clear&nbsp;List (while loop)</button>
+        <button onclick="movePara()">Move&nbsp;Paragraph → Right Box</button>
+
+        <!-- Simple list -->
+        <ul id="fruitList" class="output">
+            <li id="apple" class="card">🍎 Apple</li>
+            <li id="banana" class="card">🍌 Banana</li>
+            <li id="cherry" class="card">🍒 Cherry</li>
+        </ul>
+
+        <!-- Move demo -->
+        <div style="display:flex;gap:12px;">
+            <div id="leftBox" class="output" style="flex:1;">
+                <p id="movingP">➡ Click “Move Paragraph”</p>
+            </div>
+            <div id="rightBox" class="output" style="flex:1;"></div>
+        </div>
+    </section>
+
+    <!-- 2. replaceChild() -->
+    <section>
+        <h2>2️⃣ replaceChild()</h2>
+        <p class="explain">
+            <code>parent.replaceChild(newNode, oldNode)</code><br>
+            Swaps <em>oldNode</em> with <em>newNode</em> and returns the removed node.
+        </p>
+
+        <button onclick="replaceLogo()">Replace Logo</button>
+        <div class="output">
+            <img id="logo" src="https://placekitten.com/140/80" width="140">
+        </div>
+    </section>
+
+    <!-- 3. element.remove() -->
+    <section>
+        <h2>3️⃣ element.remove() (Modern)</h2>
+        <p class="explain">
+            Remove node directly — no parent needed, returns <code>undefined</code>.<br>
+            <em>Not in IE 11.</em>
+        </p>
+
+        <div id="btnZone" class="output">
+            <button class="remBtn">Click to remove me</button>
+            <button class="remBtn">Me too 🙂</button>
+            <button class="remBtn">And me!</button>
+        </div>
+    </section>
+
+    <!-- 4. parentNode vs parentElement -->
+    <section>
+        <h2>4️⃣ parentNode vs parentElement</h2>
+        <p class="explain">
+            <strong>parentNode</strong> → any parent (Element, Document, Fragment).<br>
+            <strong>parentElement</strong> → only if the parent <em>is an Element</em>.<br>
+            Click to see which one is <code>null</code>.
+        </p>
+
+        <button onclick="checkParents()">Check Parent Differences</button>
+        <pre id="parentOut" class="output" style="white-space:pre-wrap;"></pre>
+    </section>
+
+    <!-- JavaScript -->
+    <script>
+        // ---------- 1. removeChild() demos ----------
+        function removeBanana() {
+            const list = document.getElementById('fruitList');
+            const banana = document.getElementById('banana');
+            if (banana) list.removeChild(banana);
+        }
+
+        function clearFruit() {
+            const list = document.getElementById('fruitList');
+            // classic "while firstChild" pattern
+            while (list.firstChild) {
+                list.removeChild(list.firstChild);
+            }
+        }
+
+        function movePara() {
+            const para = document.getElementById('movingP');
+            const from = document.getElementById('leftBox');
+            const to = document.getElementById('rightBox');
+
+            const removed = from.removeChild(para);     // returns the node
+            removed.style.color = 'green';              // modify after removal
+            removed.textContent = '✅ I was moved via removeChild()';
+            to.appendChild(removed);                    // re-insert elsewhere
+        }
+
+        // ---------- 2. replaceChild() demo ----------
+        function replaceLogo() {
+            const oldImg = document.getElementById('logo');
+            const newImg = document.createElement('img');
+            newImg.src = 'https://placebear.com/140/80';
+            newImg.width = 140;
+
+            // parentNode is <div class="output">…</div>
+            oldImg.parentNode.replaceChild(newImg, oldImg);
+        }
+
+        // ---------- 3. element.remove() demo ----------
+        document.querySelectorAll('.remBtn').forEach(btn => {
+            btn.addEventListener('click', () => btn.remove());
+        });
+
+        // ---------- 4. parentNode vs parentElement demo ----------
+        function checkParents() {
+            const html = document.documentElement;         // <html>
+            const body = document.body;                    // <body>
+            const out = document.getElementById('parentOut');
+
+            const lines = [
+                `html.parentNode      ⇒ ${html.parentNode}`,      // #document
+                `html.parentElement   ⇒ ${html.parentElement}`,   // null
+                `body.parentNode      ⇒ ${body.parentNode.nodeName}`,   // HTML
+                `body.parentElement   ⇒ ${body.parentElement.nodeName}` // HTML
+            ];
+
+            out.textContent = lines.join('\\n');
+        }
+    </script>
+
+</body>
+
+</html>
