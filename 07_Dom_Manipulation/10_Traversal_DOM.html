@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Traversal – One-Page Cheat-Sheet & Playground</title>
+
+    <!-- ─── BASIC LAYOUT & COLORS ───────────────────────────────────────────── -->
+    <style>
+        :root {
+            --bg: #f6faff;
+            --card: #ffffff;
+            --primary: #0d6efd;
+            --text: #333;
+            --note: #666;
+            --border: #d0d7e2;
+            --hl-yellow: #fff4ce;
+            --hl-green: #d2f4d2;
+            --hl-blue: #cfe9ff;
+            --hl-red: #ffdada;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem 1.5rem 5rem;
+            line-height: 1.55;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2.3rem;
+        }
+
+        h2 {
+            margin: 0 0 .4rem;
+            font-size: 1.2rem;
+        }
+
+        section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.6rem 1.4rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+        }
+
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: 0;
+            border-radius: 4px;
+            padding: .45rem .9rem;
+            margin: .3rem .4rem .9rem 0;
+            cursor: pointer;
+            font-size: .9rem;
+        }
+
+        button:hover {
+            filter: brightness(1.08);
+        }
+
+        .explain {
+            font-size: .9rem;
+            color: var(--note);
+            margin-bottom: .8rem;
+        }
+
+        .box,
+        .panel {
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: .6rem .8rem;
+            margin: .35rem 0;
+            background: #fafbff;
+            position: relative;
+        }
+
+        .panel {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: #fefefe;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🍃 DOM Traversal Playground</h1>
+
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <!-- 1 ▸ parentNode vs parentElement                                          -->
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <section id="sec1">
+        <h2>1️⃣ parentNode vs parentElement</h2>
+        <p class="explain">
+            <strong>parentNode</strong> → any parent (Element, Document, Fragment)<br>
+            <strong>parentElement</strong> → only if the parent <em>is</em> an Element
+        </p>
+
+        <div id="grand" class="box">Grand-parent
+            <div id="parent" class="box">Parent
+                <span id="child" class="box">Child (click buttons)</span>
+            </div>
+        </div>
+
+        <button onclick="showParents()">Show parentNode / parentElement</button>
+        <div id="parentOut" class="panel"></div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <!-- 2 ▸ childNodes vs children                                               -->
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <section id="sec2">
+        <h2>2️⃣ childNodes vs children</h2>
+        <p class="explain">
+            <strong>childNodes</strong> → every node (elements, text, comments)<br>
+            <strong>children</strong> → <em>only</em> element nodes (HTMLCollection)
+        </p>
+
+        <ul id="list" class="box">
+            <!-- comment -->
+            <li>A</li>
+
+            <li>B</li>
+        </ul>
+
+        <button onclick="showChildren()">Display Node Lists</button>
+        <div id="childOut" class="panel"></div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <!-- 3 ▸ first/last Node vs Element                                           -->
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <section id="sec3">
+        <h2>3️⃣ first/last – Node vs Element</h2>
+        <p class="explain">
+            <code>firstChild / lastChild</code> → could be text<br>
+            <code>firstElementChild / lastElementChild</code> → elements only
+        </p>
+
+        <div id="slot" class="box">
+            <!-- leading comment -->
+            <p>Front</p>
+            <p>Back</p>
+            <!-- trailing comment -->
+        </div>
+
+        <button onclick="highlightFirst()">Highlight first*</button>
+        <button onclick="highlightLast()">Highlight last*</button>
+        <div id="firstLastOut" class="panel"></div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <!-- 4 ▸ next/previous Sibling vs ElementSibling                               -->
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <section id="sec4">
+        <h2>4️⃣ next / previous – Node vs Element</h2>
+        <p class="explain">Element-versions skip text &amp; comments.</p>
+
+        <ol id="nav" class="box" style="list-style:decimal;padding-left:22px;">
+            <li class="step">Step 1</li>
+            <!-- whitespace & comment -->
+            <li class="step current">Step 2 (current)</li>
+            <li class="step">Step 3</li>
+        </ol>
+
+        <button onclick="moveNext()">nextElementSibling ⇒</button>
+        <button onclick="movePrev()">⇐ previousElementSibling</button>
+        <div id="sideOut" class="panel"></div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <!-- SCRIPTS – all demo handlers                                              -->
+    <!-- ────────────────────────────────────────────────────────────────────────── -->
+    <script>
+        /* ============== 1. parentNode / parentElement ============================= */
+        function showParents() {
+            const child = document.getElementById('child');
+            const pNode = child.parentNode;      // always something (div.box)
+            const pElem = child.parentElement;   // same here (div.box)
+
+            const html = document.documentElement;
+            const lines = [
+                `child.parentNode      ➜  ${pNode.nodeName}`,
+                `child.parentElement   ➜  ${pElem.nodeName}`,
+                `html.parentNode       ➜  ${html.parentNode}`,       // #document
+                `html.parentElement    ➜  ${html.parentElement}`     // null
+            ];
+            document.getElementById('parentOut').textContent = lines.join('\\n');
+        }
+
+        /* ============== 2. childNodes / children ================================== */
+        function showChildren() {
+            const ul = document.getElementById('list');
+            const nodes = [...ul.childNodes].map(n => `${n.nodeName}(t${n.nodeType})`);
+            const elems = [...ul.children].map(e => e.tagName);
+
+            const txt = [
+                `childNodes   (${nodes.length}) :`,
+                nodes.join(' | '),
+                '',
+                `children     (${elems.length}) :`,
+                elems.join(' | ')
+            ].join('\\n');
+            document.getElementById('childOut').textContent = txt;
+        }
+
+        /* ============== 3. first/last Node vs Element ============================= */
+        function flash(node, color) {
+            if (!node || !node.style) return;
+            node.style.background = color;
+            setTimeout(() => (node.style.background = ''), 900);
+        }
+        function highlightFirst() {
+            const box = document.getElementById('slot');
+            const firstN = box.firstChild;
+            const firstE = box.firstElementChild;
+
+            flash(firstN, 'var(--hl-yellow)');
+            flash(firstE, 'var(--hl-green)');
+
+            document.getElementById('firstLastOut').textContent =
+                `firstChild            ➜  ${firstN.nodeName} (t${firstN.nodeType})
+firstElementChild     ➜  ${firstE.tagName}`;
+        }
+        function highlightLast() {
+            const box = document.getElementById('slot');
+            const lastN = box.lastChild;
+            const lastE = box.lastElementChild;
+
+            flash(lastN, 'var(--hl-yellow)');
+            flash(lastE, 'var(--hl-green)');
+
+            document.getElementById('firstLastOut').textContent =
+                `lastChild             ➜  ${lastN.nodeName} (t${lastN.nodeType})
+lastElementChild       ➜  ${lastE.tagName}`;
+        }
+
+        /* ============== 4. next / previous ElementSibling ======================== */
+        function clearSteps() {
+            document.querySelectorAll('#nav .step').forEach(li => li.style.background = '');
+        }
+        function moveNext() {
+            const cur = document.querySelector('#nav .current');
+            const next = cur.nextElementSibling;
+            clearSteps();
+            if (next) {
+                next.style.background = 'var(--hl-blue)';
+                document.getElementById('sideOut').textContent =
+                    `nextElementSibling ➜ ${next.textContent.trim()}`;
+            } else {
+                document.getElementById('sideOut').textContent = 'No nextElementSibling';
+            }
+        }
+        function movePrev() {
+            const cur = document.querySelector('#nav .current');
+            const prev = cur.previousElementSibling;
+            clearSteps();
+            if (prev) {
+                prev.style.background = 'var(--hl-red)';
+                document.getElementById('sideOut').textContent =
+                    `previousElementSibling ➜ ${prev.textContent.trim()}`;
+            } else {
+                document.getElementById('sideOut').textContent = 'No previousElementSibling';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
