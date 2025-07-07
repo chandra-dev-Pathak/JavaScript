@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>color change</title>
+</head>
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    /* color change */
+
+    .secColorChange {
+        background-color: grey;
+        color: white;
+        padding: 20px;
+    }
+
+    #red {
+        background-color: #ff0000;
+        display: inline;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 2px solid black;
+    }
+
+    #blue {
+        background-color: blue;
+        display: inline;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 2px solid black;
+    }
+
+    #orange {
+        background-color: orange;
+        display: inline;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 2px solid black;
+    }
+
+    #green {
+        background-color: green;
+        display: inline;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 2px solid black;
+    }
+
+    /* bmi calculator  */
+
+    .secBMI {
+        background-color: rgb(39, 39, 39);
+        color: white;
+        padding: 20px;
+    }
+
+    .result {
+        color: green;
+    }
+
+    /* Display Time Clock   */
+
+    .timeClock {
+        background-color: rgb(30, 30, 30);
+        color: white;
+        padding: 20px;
+    }
+
+    .banner {
+        background-color: orange;
+        padding: 10px 20px;
+        color: white;
+        width: 20%;
+        text-align: center;
+        letter-spacing: 2px;
+    }
+
+    /* Guess number */
+
+    .guessNumber {
+        background-color: rgb(16, 16, 16);
+        color: white;
+        padding: 20px;
+    }
+</style>
+
+<body>
+
+    <!-- color change  -->
+
+    <section class="secColorChange">
+        <h1>Color Change By Click</h1>
+        <br>
+
+
+        <span class="btn" id="red">Red</span>
+        <span class="btn" id="green">Green</span>
+        <span class="btn" id="blue">Blue</span>
+        <span class="btn" id="orange">Orange</span>
+        <br>
+
+        <br>
+
+
+        <p>When You Change the Whole Body Color</p>
+
+    </section>
+
+    <!-- bmi calculator  -->
+
+    <section class="secBMI">
+
+        <h1>BMI Calculator</h1>
+
+        <form>
+            <label for="heights">Height</label>
+            <br>
+            <input type="number" name="height" placeholder="height" id="heights">
+            <br>
+            <br>
+            <label for="weights">Weight</label>
+            <br>
+            <input type="number" name="weight" placeholder="weight" id="weights">
+            <br>
+            <br>
+            <button class="submit">calculate</button>
+            <p class="resultP">Result: <span class="result"></span></p>
+        </form>
+    </section>
+
+    <!-- Display Time Clock  -->
+
+    <section class="timeClock">
+
+        <h1>Display Time Clock</h1>
+
+        <div class="banner">
+            <p class="displayTime">20:41:52</p>
+        </div>
+
+    </section>
+
+    <!-- Guess Number -->
+
+    <section class="guessNumber">
+
+        <h1>Guess Number Btw ( 1 - 100 )</h1>
+        <br>
+        <br>
+        <input type="number" id="dis" class="userInput">
+        <input type="submit" id="btn">
+        <br>
+        <br>
+        <p>Result: <span class="message">Message ( Guess the number in Input and submit)</span></p>
+        <p id="mess">Attempt: <span class="attempt">10</span> </p>
+        <p class="total">Total Attempt: </p>
+
+    </section>
+
+    <script>
+
+        /* color change */
+
+        const colorChnage = document.querySelector(".secColorChange");
+        const button = document.querySelectorAll(".btn");
+
+        button.forEach((val) => {
+            val.addEventListener("click", (e) => {
+
+                switch (e.target.id) {
+                    case "red":
+                        colorChnage.style.backgroundColor = e.target.id
+                        break;
+                    case "green":
+                        colorChnage.style.backgroundColor = e.target.id;
+                        break;
+                    case "orange":
+                        colorChnage.style.backgroundColor = e.target.id;
+                        break;
+                    case "blue":
+                        colorChnage.style.backgroundColor = e.target.id;
+                        break;
+                }
+            })
+        })
+
+        /* bmi calculator  */
+
+        const form = document.querySelector('form');
+        const result = document.querySelector(".resultP");
+
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const heights = document.querySelector("#heights").value;
+            const weights = document.querySelector("#weights").value;
+            if (isNaN(heights) || heights == 0 || heights == "") {
+                result.innerHTML = `<p class="resultP">Result: <span class="result">Give Proper Height </span></p>`;
+            } else if (isNaN(weights) || weights == 0 || weights == "") {
+                result.innerHTML = `<p class="resultP">Result: <span class="result">Give Proper Weight </span></p>`;
+            } else {
+                const bmi = (weights / ((heights * heights) / 10000)).toFixed(2);
+                result.innerHTML = `<p class="resultP">Result: <span class="result">${bmi}</span></p>`;
+            }
+        })
+
+        // Display Time Clock
+
+        const displayTime = document.querySelector(".displayTime");
+
+        setInterval(() => {
+            const now = new Date();;
+            displayTime.innerText = now.toLocaleTimeString();
+        }, 1000);
+
+        // Guess the number
+
+        const randomNumber = parseInt(Math.random() * 100 + 1);
+        console.log(randomNumber);
+        let count = 10;
+        let arr = [];
+
+        const message = document.querySelector('.message');
+        const attempt = document.querySelector('.attempt');
+        const total = document.querySelector('.total');
+        const inputBtn = document.querySelector("#btn");
+
+        inputBtn.addEventListener("click", () => {
+
+            const iV = document.querySelector(".userInput");
+            const inputValue = document.querySelector(".userInput").value;
+
+            if (isNaN(num) || num < 1 || num > 100) {
+                message.innerHTML = `<span class="message">❌ Enter number between 1 - 100</span>`;
+                return;
+            } else if (inputValue == randomNumber) {
+                message.innerHTML = '<span class="message">You win This Game</span>';
+                document.querySelector("#dis").disabled = true;
+                inputBtn.disabled = true;
+            } else if (inputValue > randomNumber) {
+                message.innerHTML = '<span class="message">To high</span>'
+            } else if (inputValue < randomNumber) {
+                message.innerHTML = '<span class="message">To low</span>'
+            }
+            document.querySelector("#dis").value = ""
+
+            count--
+            attempt.innerText = `${count}`
+            arr.push(parseInt(inputValue))
+            total.innerHTML = `<p class="total">Total Attempt: ${arr}</p>`;
+
+            if (count == 0) {
+                document.querySelector("#dis").disabled = true;
+                inputBtn.disabled = true;
+                message.innerHTML = `<span class="message">Game Over! The number was ${randomNumber}</span>`;
+            }
+        })
+    </script>
+</body>
+
+</html>
