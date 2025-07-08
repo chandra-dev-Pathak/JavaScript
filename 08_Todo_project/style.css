@@ -1,0 +1,186 @@
+/* --------------------  GLOBAL  -------------------- */
+:root {
+    --primary: #4f46e5;
+    /* Indigo */
+    --primary-dark: #3730a3;
+    --danger: #dc2626;
+    /* Delete btn (future‑proof) */
+    --text: #111827;
+    --bg: #f9fafb;
+    --white: #ffffff;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, "Inter", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+}
+
+/* --------------------  NAVBAR FILTERS  -------------------- */
+.navbar {
+    width: 100%;
+    max-width: 48rem;
+    /* 768 px */
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+}
+
+.navbar button {
+    flex: 1;
+    padding: .55rem 1rem;
+    border: none;
+    border-radius: .375rem;
+    background: var(--primary);
+    color: var(--white);
+    font-size: .9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.navbar button:hover,
+.navbar button:focus-visible {
+    background: var(--primary-dark);
+}
+
+/* --------------------  HEADING  -------------------- */
+.heading {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* --------------------  INPUT + ADD BUTTON  -------------------- */
+/* Phone: stack vertically */
+#main_Input,
+#button {
+    width: 100%;
+    display: block;
+}
+
+#main_Input {
+    padding: .55rem .75rem;
+    border: 2px solid var(--primary);
+    border-radius: .375rem;
+    font-size: 1rem;
+    margin-bottom: .75rem;
+    outline: none;
+}
+
+#button {
+    padding: .55rem 1rem;
+    border: none;
+    border-radius: .375rem;
+    background: var(--primary);
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+#button:hover,
+#button:focus-visible {
+    background: var(--primary-dark);
+}
+
+/* --------------------  TODO LIST  -------------------- */
+#all_List {
+    width: 100%;
+    max-width: 48rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+}
+
+#all_List li {
+    background: var(--white);
+    padding: .75rem 1rem;
+    border-radius: .55rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    box-shadow: 0 1px 2px rgb(0 0 0 / .05);
+}
+
+/* strike‑through completed items – JS se li ko done class de dena */
+#all_List li.done {
+    text-decoration: line-through;
+    opacity: .6;
+}
+
+/* (optional) delete button future‑proofing */
+.todo-delete {
+    background: var(--danger);
+    color: var(--white);
+    border: none;
+    border-radius: .375rem;
+    padding: .25rem .55rem;
+    cursor: pointer;
+    font-size: .8rem;
+}
+
+/* --------------------  MEDIA QUERIES  -------------------- */
+/* Tablet ≥ 640 px */
+@media (min-width: 640px) {
+    .heading {
+        font-size: 2rem;
+    }
+
+    /* place input + add side‑by‑side */
+    #main_Input,
+    #button {
+        display: inline-block;
+        width: auto;
+        margin-bottom: 0;
+        vertical-align: top;
+    }
+
+    #main_Input {
+        width: 70%;
+        border-radius: .375rem 0 0 .375rem;
+    }
+
+    #button {
+        width: 30%;
+        border-radius: 0 .375rem .375rem 0;
+    }
+}
+
+/* Desktop ≥ 1024 px */
+@media (min-width: 1024px) {
+    body {
+        padding-top: 2rem;
+    }
+
+    .heading {
+        font-size: 2.25rem;
+    }
+
+    #main_Input,
+    #button {
+        font-size: 1.125rem;
+    }
+
+    #button {
+        padding-inline: 1.25rem;
+    }
+}
