@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Traffic Light Simulator</title>
+    <style>
+        /* housing */
+        #traffic-light {
+            width: 80px;
+            background: #333;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        /* each lamp */
+        .light {
+            width: 50px;
+            height: 50px;
+            margin: 8px auto;
+            border-radius: 50%;
+            background: #111;
+            /* off = dark */
+            transition: background 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="traffic-light">
+        <div id="red" class="light"></div>
+        <div id="yellow" class="light"></div>
+        <div id="green" class="light"></div>
+    </div>
+
+    <script>
+        const red = document.getElementById('red');
+        const yellow = document.getElementById('yellow');
+        const green = document.getElementById('green');
+
+        function clearAll() {
+            red.style.backgroundColor =
+                yellow.style.backgroundColor =
+                green.style.backgroundColor = '#111';
+        }
+
+        function startTraffic() {
+            clearAll();
+            red.style.backgroundColor = 'red';
+
+            setTimeout(() => {
+                clearAll();
+                yellow.style.backgroundColor = 'yellow';
+
+                setTimeout(() => {
+                    clearAll();
+                    green.style.backgroundColor = 'green';
+
+                    setTimeout(startTraffic, 2000);
+                }, 1000);
+            }, 3000);
+        }
+
+        startTraffic();
+    </script>
+</body>
+
+</html>

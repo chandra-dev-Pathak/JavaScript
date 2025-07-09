@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typewriter Effect </title>
+
+</head>
+
+<body>
+    <h1 id="heading"></h1>
+
+
+    <script>
+
+        let heading = document.getElementById('heading');
+        let i = 0
+        const msg = "Hello, world!";
+
+        function typeNext() {
+            heading.innerText += msg[i];
+            i += 1
+            if (i < msg.length) {
+                setTimeout(typeNext, 120)
+            }
+        }
+        typeNext();
+
+
+
+    </script>
+</body>
+
+</html>
