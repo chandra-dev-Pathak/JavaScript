@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>clearInterval</title>
+</head>
+
+<body>
+
+    <p>Auto-stop counter after 10 s</p>
+    <p>Also stop by button</p>
+    <p>Count: <span id="out">0</span></p>
+    <button id="stop">stop</button>
+
+
+    <script>
+
+        let i = 0;
+
+        let out = document.getElementById('out');
+
+        // You must store the intervalId and pass it to clearInterval().
+        let id = setInterval(() => {
+            out.innerText = ++i;
+
+            if (i === 10) {
+                clearInterval(id);
+            }
+        }, 1000);
+
+        document.getElementById('stop').addEventListener('click', () => {
+            clearInterval(id);
+        });
+
+    </script>
+</body>
+
+</html>
