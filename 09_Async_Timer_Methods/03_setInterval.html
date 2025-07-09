@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>setInterval</title>
+</head>
+
+<body>
+
+    <h1 id="count">0</h1>
+
+
+    <script>
+
+        let count = 0;
+        let count_plus_plus = () => {
+            let h1 = document.getElementById('count');
+            h1.innerText = count++
+        }
+
+        setInterval(count_plus_plus, 1000);
+
+
+        // setInterval also take Third parameter
+
+        function helloPrint(str) {
+            console.log(`hello ${str} ${Math.floor(Math.random() * 100 + 1)}`);
+        }
+
+        setInterval(helloPrint, 1000, 'raghaw');
+    </script>
+</body>
+
+</html>
