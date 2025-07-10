@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Clock</title>
+    <style>
+        .box {
+            background-color: grey;
+            border-radius: 20px;
+            width: 150px;
+            padding: 40px;
+            text-align: center;
+            margin: auto;
+            margin-top: 18%;
+            font-size: 20px;
+            color: white;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <p id="clock"></p>
+        <p id="date"></p>
+    </div>
+
+    <script>
+        const clock = document.getElementById('clock');
+        const today = document.getElementById('date');
+
+        // update every second
+        function updateTime() {
+            const now = new Date();
+
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            clock.innerText = `${hours}:${minutes}:${seconds}`;
+            today.innerText = now.toDateString();
+        }
+
+        // run once immediately
+        updateTime();
+        // and then every 1s
+        setInterval(updateTime, 1000);
+    </script>
+
+</body>
+
+</html>

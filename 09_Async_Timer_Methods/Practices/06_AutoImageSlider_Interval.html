@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auto Image Slider</title>
+    <style>
+        .box {
+            width: 400px;
+            height: 400px;
+            background-color: black;
+            border-radius: 50px;
+            margin: auto;
+        }
+
+        #img {
+            width: 350px;
+            height: 350px;
+            padding: 25px;
+            border-radius: 80px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <img id="img" src="" alt="Random Image" />
+    </div>
+
+    <div class="controls">
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+    </div>
+
+    <script>
+        const arr = [
+            'https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg',
+            'https://media.istockphoto.com/id/495829576/photo/blue-and-yellow-macaw-on-the-nature.jpg?s=1024x1024&w=is&k=20&c=QagaYE1Lilme4R8ucpb53SYPJgJugW6qU1qftaYpGoo=',
+            'https://media.istockphoto.com/id/900629526/photo/hyacinth-macaws.jpg?s=1024x1024&w=is&k=20&c=1C1F8uCcYEfeqbwDOoTZnevc0Z6Z-Oo-xWSyEWxv3mQ=',
+            'https://media.istockphoto.com/id/1268654991/photo/stylish-senior-man-portrait.jpg?s=1024x1024&w=is&k=20&c=UO2Q5H4grCUtOkxN1Hx8wlD2Kx40WNkaVCsDc0NdDxE='
+        ];
+
+        const img = document.getElementById('img');
+        const startBtn = document.getElementById('start');
+        const stopBtn = document.getElementById('stop');
+
+        let i = 0;
+        let intervalId = null;
+
+        function changeImage() {
+            img.src = arr[i];
+            i = (i + 1) % arr.length; // loops back to 0 after last image
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (intervalId === null) {
+                changeImage(); // show first immediately
+                intervalId = setInterval(changeImage, 3000);
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            clearInterval(intervalId);
+            intervalId = null;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+</head>
+
+<body>
+
+    <h1 id="count">10</h1>
+    <button id="start">Start</button>
+    <button id="reset">Reset</button>
+
+    <script>
+
+        const count = document.getElementById('count');
+        const start = document.getElementById('start');
+        const reset = document.getElementById('reset');
+
+        let countDown = 10;
+        let id;;
+
+        function reStart() {
+            id = setInterval(() => {
+                count.innerText = --countDown;
+                if (countDown === 0) clearInterval(id);
+            }, 1000);
+        }
+
+
+        start.addEventListener('click', () => {
+            reStart()
+        });
+
+
+        reset.addEventListener('click', () => {
+            count.innerText = '10'
+            countDown = 10;
+            clearInterval(id);
+            reStart()
+        });
+
+    </script>
+
+</body>
+
+</html>
