@@ -1,0 +1,632 @@
+---------------------------------------------------------------------------------
+1. Step ===>>>
+
+--- What is XMLHttpRequest **
+
+XMLHttpRequest is a constructor function built into the browser.
+
+Calling that constructor with new, which creates a new object (a fresh request handler).
+
+Holding it in a variable like xhr so you can configure and use it.
+
+-- const xhr = new XMLHttpRequest();
+
+What happens at this point? **
+
+The request object is created, but Nothing is sent to the server yet.
+
+"it just creates the object for a new request — no request is sent to the server yet"
+
+Real - Example:- 
+
+new XMLHttpRequest() is like calling the waiter to your table.
+
+The waiter is now waiting for your order (but hasn't gone to the kitchen yet).
+
+---------------------------------------------------------------------------------------
+2. Step ===>>>
+
+--- What is xhr.open() ?
+
+Default by Broswer:- xhr.open(method, url, async = true, user = null, password = null);
+
+-- HTTP Methods(string):- "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"
+
+"GET":- Read/fetch data
+"POST":- Create/send new data
+"PUT":- Full update (replace)
+"PATCH":- Update selected fields
+"DELETE":- Remove data
+"HEAD":- Check if resource exists
+"OPTIONS":- Preflight requests (CORS)
+
+** Most used:- "GET", "POST", "PUT", "DELETE"
+
+-- url(string):- The server endpoint you're requesting data from (where you data get, push)
+
+-- async (boolean, optional):- true by Default
+
+xhr.open("GET", "url", true);   -> Async 
+xhr.open("GET", "url", false);  -> Sync (bad UX, freeze)
+
+if true request non blocking still working dont freeze UI (Recommended) 
+if false request blocking working but UI freeze util request clear (Not Recommended)
+
+-- Username and Password (optional string) both are null by Default
+
+xhr.open(method, url, async = true, user = null, password = null);
+xhr.open("GET", "url", true, "admin", "1234");
+
+user:- Username for Basic Auth
+password:- Password for Basic Auth
+When needed:- Only for protected routes using Basic Authentication
+Where used:- Internal APIs, admin panels, old systems
+Modern use:- Rare, replaced by token-based auth
+
+How its work:-
+
+Server said This end point protected firstly send Username password then i give you data
+Browser Send Authorization header credentials base64 format.
+
+** Still No Request Sent Yet! **
+
+Even after .open(), the browser is just setting things up:
+It now knows what request you want,
+But the request is still not sent yet.
+
+Real - Example:- 
+
+You told the waiter what food you want.
+He wrote it down, but hasn’t gone to the kitchen yet.
+
+---------------------------------------------------------------------------------------
+3. Step ===>>>
+
+--- xhr.send() — The Actual Request Is Sent
+
+xhr.send();          // For GET, DELETE (no body)
+xhr.send(data);      // For POST, PUT, PATCH (with body)
+
+What does this do?
+
+After you've set up your request using .open(), calling .send() actually fires off the HTTP request to the server.
+
+You must call .open() before .send()
+
+Full Flow So Far:-
+
+const xhr = new XMLHttpRequest(); // 1. Create a request object
+xhr.open("GET", "https://api.example.com/data"); // 2. Configure it
+xhr.send(); // 3. Send the request
+
+When does the browser get a response:-
+The response does not come instantly. -> It arrives asynchronouslys
+
+What happens when we send? -> Behind the scenes:
+
+-Browser opens a TCP connection
+-Sends the HTTP headers + body (if any)
+-Starts listening for the response
+
+Real - Example:- 
+
+The waiter now walks to the kitchen and places your order.
+
+---------------------------------------------------------------------------------------
+4. Step ===>>>
+
+--- xhr.onload — Handling the Response
+
+xhr.onload is a function that runs when the request is successfully completed (i.e. server responded, no network error).
+
+xhr.onload = function () {
+    This code runs AFTER the response is received
+};
+
+**.onload is an event listener — it needs to be set up before the event happens.**
+
+1️. Create request
+const xhr = new XMLHttpRequest();
+
+2️. Configure request
+xhr.open("GET", "url", true);
+
+3️. Setup listener BEFORE sending
+xhr.onload = function () {
+    This runs AFTER the response comes
+};
+
+4️. Send the request
+xhr.send(); -> This fires the request
+
+**Internally Working:-
+
+-xhr.send() starts the request.
+-Browser sends request to server.
+-When response comes back, browser looks:
+-“If any onload ? Yes ? So executed”
+
+What’s available inside xhr.onload:-
+
+Property           |Description                        |Example                    
+------------------ |---------------------------------- |---------------------------
+`xhr.status`       |HTTP status code                   |200 = OK, 404 = Not Found  
+`xhr.statusText`   |Status message                     |"OK", "Not Found", etc.    
+`xhr.responseText` |Raw response as string (text/JSON) |Use `JSON.parse()` for JSON
+`xhr.responseXML`  |Parsed XML response (if XML)       |Optional                   
+`xhr.responseURL`  |Final URL (after redirects)        |Useful for debugging       
+
+
+Always do this order:-> IF you want Handling the Response:-
+
+xhr = new XMLHttpRequest() 
+xhr.open(...);
+xhr.onload = () => {...};
+xhr.send();
+
+--onload vs onreadystatechange:-
+
+Property	                Description
+xhr.onload	                Simple, fires only once when done 
+xhr.onreadystatechange	    Fires 4 times, needs readyState checks 
+
+**Summary**
+
+-Key Point-	                              -Detail-
+When                                    it runs	After successful response
+Doesn't run when	                    Network error, timeout, abort
+Use xhr.status	                        To check if request was OK
+Use JSON.parse()	                    To parse JSON responses
+
+Example with JSON Parsing:- 
+
+xhr.onload = function () {
+  if (xhr.status === 200) {
+    const data = JSON.parse(xhr.responseText);
+    console.log("User Name:", data.name);
+  } else {
+    console.error("Failed with status:", xhr.status);
+  }
+};
+
+Real - Example:- 
+
+1. You place an order (.send())
+2. Waiter brings your food (.onload triggers)
+3. You check if it’s the right food (.status === 200)
+4. You eat it (responseText)
+
+---------------------------------------------------------------------------------------
+5. Step ===>>>
+
+--- xhr.onerror — Handling Errors
+
+xhr.onerror = function () {
+  console.error("Network error occurred — request could not be completed.");
+};
+
+While .onload handles a successful server response, it doesn’t catch things like:-
+"No internet connection", "Server down", "CORS blocked", "Timeout", "domain doesn’t exist"
+
+Then only .onerror will fire( handeler ).
+
+**.onload is an event listener — it needs to be set up before the event happens.**
+
+Always do this order:-> IF you want Handling the Errors:-
+
+xhr = new XMLHttpRequest() 
+xhr.open(...);
+xhr.onload = () => {...};
+xhr.onerror = () => {...};
+xhr.send();
+
+**Internally Working:-
+
+-xhr.send() starts the request.
+-Browser sends request to server.
+-When response comes back, browser looks:
+-“If any onerror ? Yes ? So executed”
+
+**Important**
+xhr.onerror will not run on HTTP errors (like 404, 500, etc).
+For those, use xhr.onload and check xhr.status
+
+Summary Table:-
+
+Situation               | Triggers `onerror`? | Triggers `onload`?    
+------------------------| ------------------- | ----------------------
+HTTP 200 OK             | No                  | Yes               
+Invalid domain          | Yes                 | No                  
+Internet off            | Yes                 | No                  
+404 Not Found           | No                  | Yes (check `status`)
+CORS blocked by browser | Yes                 | No                  
+Request timeout         | (or `ontimeout`)    | No                  
+
+---------------------------------------------------------------------------------------
+6. Step ===>>>
+
+--- xhr.readyState — The 5 Request States
+
+When you send a request using XMLHttpRequest, the browser updates a special property called:- xhr.readyState
+
+** readyState is number (0-4) that Show current state of the request lifecycle.**
+
+Browser internally updates readyState as the request progresses.
+
+Full Lifecycle Diagram:
+
+xhr = new XMLHttpRequest()
+        ↓
+  0 = UNSENT
+xhr.open()
+        ↓
+  1 = OPENED
+xhr.send()
+        ↓
+  2 = HEADERS_RECEIVED
+        ↓
+  3 = LOADING
+        ↓
+  4 = DONE
+
+
+
+xhr.readyState — The 5 States:-
+
+`readyState`|Constant Name     |What It Means                                      
+------------|------------------|---------------------------------------------------
+`0`         |`UNSENT`          |Request created but `open()` not called yet        
+`1`         |`OPENED`          |`open()` has been called                           
+`2`         |`HEADERS_RECEIVED`|`send()` has been called; response headers received
+`3`         |`LOADING`         |Downloading the response (partial data)            
+`4`         |`DONE`            |Response fully received                            
+              
+Only when readyState === 4 you should access xhr.responseText.
+
+** Common Mistake **
+
+if (xhr.readyState === 4) {
+  But xhr.status might be 404
+}
+
+-->> ** So always combine both **
+
+if (xhr.readyState === 4 && xhr.status === 200) {
+  Success!
+}
+
+*** Detecting state changes -> use onreadystatechange ***
+
+onreadystatechange is a callback function that runs every time the readyState changes in an XMLHttpRequest.
+
+How it Works:- 
+
+xhr.onreadystatechange = function () {
+  if (xhr.readyState === 4 && xhr.status === 200) {
+    console.log("Response received:", xhr.responseText);
+  }
+};
+
+XMLHttpRequest Lifecycle:-> for onreadystatechange:-
+
+1. const xhr = new XMLHttpRequest();         // readyState = 0
+2. xhr.onreadystatechange = function () {};  // You attach your listener
+3. xhr.open("GET", "url");                   // readyState = 1
+4. xhr.send();                               // starts the request
+
+When you call open() , readyState changes to 1
+If onreadystatechange initilize before so its fire on time
+
+---------------------------------------------------------------------------------------
+7. Step ===>>>
+
+--- xhr.setRequestHeader("Header-Name", "Header-Value");
+
+** This method is used to set HTTP headers before sending a request. **
+** You must call this after xhr.open() but before xhr.send(). **
+
+** Header **:- Extra information that the browser sends to the server with the request.
+Example: Format of data sent, user's auth token, language, etc.
+
+Why use setRequestHeader()?
+
+1. You're sending data to the server (e.g. POST, PUT)
+2. You want to customize your request
+3. You need to set authentication, Content-Type, or custom headers
+
+Request Header vs Response Header:-
+
+Type               |Sent/Received By |Example                         
+-------------------|---------------- |--------------------------------
+**Request Header** |Browser → Server |`Content-Type: application/json`
+**Response Header**|Server → Browser |`Content-Length: 455`    
+
+**  1. Top Used Request Headers (Client → Server) **
+
+Header Name    |Purpose                                    
+---------------|-------------------------------------------
+`Content-Type` |Data format you're sending (`json`, `form`)
+`Authorization`|Send token or login credentials            
+`Accept`       |What format you want back (`json`, `html`) 
+`Origin`       |Used in CORS                               
+`User-Agent`   |Browser details (auto set)                 
+`Cookie`       |Send client cookies to server              
+
+** 2. Top Used Response Headers (Server → Client) **
+
+Header Name             |Purpose                           
+------------------------|----------------------------------
+`Content-Type`          |Tells client data format returned 
+`Set-Cookie`            |Send a new cookie to browser      
+`Access-Control-Allow-*`|Allow cross-origin requests (CORS)
+`Content-Length`        |Size of response                  
+`Cache-Control`         |Prevent or enable browser caching 
+`Content-Disposition`   |Force file download / inline open 
+
+--General Headers (Request + Response):- browser, server both Send.-->
+
+Header Name        |Value Example                  |Use                  
+-------------------|-------------------------------|---------------------
+`Cache-Control`    |`no-cache`, `max-age=0`        |Cache disable ya set 
+`Connection`       |`keep-alive`, `close`          |Connection control   
+`Date`             |`Thu, 11 Jul 2025 12:00:00 GMT`|Date/time of response
+`Pragma`           |`no-cache`                     |Old-style caching    
+`Trailer`          |`Expires`                      |Trailer header coming
+`Transfer-Encoding`|`chunked`                      |Response encoding    
+`Upgrade`          |`websocket`                    |Protocol upgrade     
+`Via`              |`1.1 google`                   |Proxy info           
+`Warning`          |`199 Miscellaneous warning`    |Warning from server  
+
+** Request Headers (Client → Server) ** 
+a. Authentication Headers -->>
+
+Header Name          |Value Example                               |Use                     
+---------------------|--------------------------------------------|------------------------
+`Authorization`      |`Bearer <token>` or `Basic YWxhZGRpbjpvcGVu`|Auth token or Basic Auth
+`Proxy-Authorization`|`Basic ZGF0YQ==`                            |Proxy login             
+
+b. Content Headers -->>
+
+Header Name       |Value Example     |Use             
+------------------|------------------|----------------
+`Content-Type`    |`application/json`|Body format     
+`Content-Length`  |`348`             |Size of body    
+`Content-Encoding`|`gzip`, `br`      |Body compression
+`Content-Language`|`en-US`           |Language of body
+`Content-Location`|`/api/data`       |URI of resource 
+
+c. Control & Request Meta -->>
+
+Header Name        |Value Example                  |Use                   
+-------------------|-------------------------------|----------------------
+`Accept`           |`application/json`             |What format you accept
+`Accept-Encoding`  |`gzip, deflate, br`            |Supported compressions
+`Accept-Language`  |`en-US, en;q=0.9`              |Preferred languages   
+`Origin`           |`https://yourdomain.com`       |CORS checks           
+`Referer`          |`https://google.com`           |Previous page         
+`Host`             |`api.example.com`              |Requested host        
+`User-Agent`       |`Mozilla/5.0 ...`              |Browser info          
+`If-Modified-Since`|`Wed, 21 Oct 2021 07:28:00 GMT`|Only if changed       
+`If-None-Match`    |`W/"123456"`                   |Cache match           
+`Range`            |`bytes=0-499`                  |Download partial file 
+
+** Response Headers (Server → Client) **
+
+a. CORS (Cross-Origin)
+
+Header Name                   |Value Example                |Use                   
+------------------------------|-----------------------------|----------------------
+`Access-Control-Allow-Origin` |`*`, `https://yourdomain.com`|Allow cross-origin    
+`Access-Control-Allow-Methods`|`GET, POST, PUT`             |Allowed methods       
+`Access-Control-Allow-Headers`|`Authorization`              |Custom headers allowed
+`Access-Control-Max-Age`      |`600`                        |Cache preflight       
+
+b. Security Headers
+
+Header Name                |Value Example                        |Use                  
+---------------------------|-------------------------------------|---------------------
+`Strict-Transport-Security`|`max-age=31536000; includeSubDomains`|Force HTTPS          
+`Content-Security-Policy`  |`default-src 'self'`                 |Restrict scripts     
+`X-Content-Type-Options`   |`nosniff`                            |Don’t guess MIME type
+`X-Frame-Options`          |`DENY`                               |Block iframe embeds  
+`X-XSS-Protection`         |`1; mode=block`                      |XSS filter           
+
+c. Response Info
+
+Header Name          |Value Example                    |Use                       
+---------------------|---------------------------------|--------------------------
+`ETag`               |`W/"123abc"`                     |Caching/versioning        
+`Last-Modified`      |`Tue, 20 Jul 2024 10:00:00 GMT`  |Last update time          
+`Location`           |`/new-url` or full URL           |Redirect target           
+`Set-Cookie`         |`sessionId=abc123`               |Set cookies               
+`Retry-After`        |`120`                            |When to retry (Rate limit)
+`Content-Disposition`|`attachment; filename="file.txt"`|File download             
+
+---------------------------------------------------------------------------------------
+8. Step ===>>>
+
+--- xhr.abort() — Cancel an Ongoing Request
+
+It cancels an HTTP request made with XMLHttpRequest.
+If the request is still ongoing (not yet finished), abort() terminates it immediately.
+
+** Where abort position **
+Always use .abort() after .open() and .send() — but before it finishes.
+
+WHERE do we put .abort()? Depend On Situation:- 
+
+Situation                       |Where you call `.abort()`                
+--------------------------------|-----------------------------------------
+ Cancel a request after a delay |`setTimeout(() => xhr.abort(), 2000)`    
+ Cancel when user types again   |Inside `input` or `keydown` listener     
+ Cancel on manual user action   |In a `click` handler (e.g. Cancel button)
+ Cancel on custom timeout logic |Inside a timer if `xhr.readyState !== 4` 
+
+
+** Why is it useful? **
+
+ Real Situation      | Why Abort?                            
+ --------------------| --------------------------------------
+ User leaves the page| No need to finish the request         
+ New request is made | Cancel the previous one               
+ Search suggestions  | Cancel old query when new key is typed
+ Timeout control     | Stop long-running request manually    
+
+When does it work?
+** Only after xhr.open() and before the request is completed (before readyState == 4). **
+
+** What happens after abort? **
+
+- xhr.status becomes 0
+- xhr.readyState becomes 0 again
+- onabort event (if set) will fire
+- onload, onerror, etc. won't fire.
+- The request is killed silently No response received, no network activity continues.
+
+onabort event (if set) will fire-->>
+
+xhr.onabort = function () {
+  console.log("Request was aborted");
+};
+
+---------------------------------------------------------------------------------------
+9. Step ===>>>
+
+--- xhr.timeout & xhr.ontimeout
+
+These are used to automatically cancel a request if it takes too long to respond.
+
+** What is xhr.timeout? **
+It sets a maximum time (in milliseconds) the request is allowed to take.
+
+If the server doesn’t respond in that time, the browser aborts the request and fires the ontimeout event.
+
+Example:- 
+xhr.timeout = 3000; // Cancel if it takes more than 3 seconds
+
+** What is xhr.ontimeout **
+It’s an event handler that runs when the request is automatically aborted due to a timeout.
+
+Example:- 
+xhr.ontimeout = function () {
+  console.log("Request took too long and was aborted!");
+};
+
+Real World Example:-
+Imagine you're making a search suggestion feature. You want to abort requests that take too long, so your UI doesn't hang.
+
+---------------------------------------------------------------------------------------
+10. Step ===>>>
+
+--- xhr.responseType — Control Response Format
+
+By default, XHR returns response as text string (you have to JSON.parse() it manually).
+
+But using xhr.responseType, you can tell the browser:
+"I want this response already parsed as blob, json, arraybuffer, etc."
+
+xhr.responseType = "json";
+No need for JSON.parse(xhr.responseText) anymore.
+
+Why use it?
+Because you don't always want plain text — sometimes you want binary data (like images, files), or JSON objects parsed automatically.
+
+** Common Types of responseType **
+
+Value         |Description                                     |Output Format      
+--------------|------------------------------------------------|-------------------
+`""` (default)|Text (you must manually parse JSON if needed)   |`responseText`     
+`text`        |Same as default (plain string)                  |`responseText`     
+`json`        |Auto-parse JSON into object                     |`response` (object)
+`blob`        |Binary file data (PDF, image, etc.)             |`Blob`             
+`arraybuffer` |Raw binary data (for WebGL, video buffers, etc.)|`ArrayBuffer`      
+`document`    |Parse HTML/XML into DOM `document`              |`responseXML`      
+`ms-stream`   |(Old IE streaming, rare)                        |-                  
+
+---------------------------------------------------------------------------------------
+11. Step ===>>>
+
+--- xhr.withCredentials — Send Cookies or Auth Headers (Cross-Origin)
+
+By default, cross-site requests (CORS) do NOT send cookies or credentials.
+xhr.withCredentials = "false" (by default)
+
+** When we Use **
+
+When calling a cross-origin API (different domain), cookies and credentials are not sent by default.
+Set .withCredentials = true (if you want to include them).
+
+Real World example:-
+
+Use .withCredentials = true if you're:-
+Making authenticated requests to another domain.
+Or working with cookies in CORS.
+
+** Use Cases **
+
+Use Case                        |Needed?                 
+--------------------------------|------------------------
+Requesting from **same origin** | No need               
+Cross-Origin with cookie/session| Yes                   
+Using token in header           | Not required for token
+Calling secured admin panel     | Yes if login-based    
+
+** Important Points **
+
+-withCredentials must be set before .send()
+-Works only if server allows credentials
+-Doesn’t auto-attach credentials unless browser already has them (like cookies from login)
+
+---------------------------------------------------------------------------------------
+12. Step ===>>>
+
+--- xhr.onprogress & xhr.upload.onprogress
+
+These properties allow you to track the progress of your HTTP requests:
+
+-xhr.onprogress — tracks download progress
+-xhr.upload.onprogress — tracks upload progress (only for POST, PUT, etc.)
+
+1. xhr.onprogress — Download Progress
+This fires periodically while the browser is downloading the response from the server.
+
+** use it After Open() **
+
+xhr.onprogress = function (event) {
+  if (event.lengthComputable) {
+    const percent = (event.loaded / event.total) * 100;
+    console.log(`Downloaded: ${percent.toFixed(2)}%`);
+  } else {
+    console.log(`Downloaded: ${event.loaded} bytes`);
+  }
+};
+
+
+2. xhr.upload.onprogress — Upload Progress
+This fires while uploading data to the server (e.g., in POST/PUT with file or JSON).
+
+** use it After Open() **
+
+xhr.upload.onprogress = function (event) {
+  if (event.lengthComputable) {
+    const percent = (event.loaded / event.total) * 100;
+    console.log(`Uploaded: ${percent.toFixed(2)}%`);
+  } else {
+    console.log(`Uploaded: ${event.loaded} bytes`);
+  }
+};
+
+** Properties in Progress Event **
+
+Property                |Description                       
+------------------------|----------------------------------
+`event.loaded`          |Number of bytes transferred so far
+`event.total`           |Total bytes to transfer (if known)
+`event.lengthComputable`|Boolean — is `total` known?       
+
+** Use Cases **
+ Show progress bar
+ Uploading files
+ Visual feedback for large downloads
+ Handling slow networks
+
