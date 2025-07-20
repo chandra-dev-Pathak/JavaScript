@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST</title>
+</head>
+
+<body>
+    <h2>Create New User</h2>
+
+    <div style="display: flex; gap:20px;">
+        <div style="background-color: #ff0000; width: max-content;">
+            <h1>boxBefore</h1>
+            <p id="boxBefore"></p>
+        </div>
+        <div style="background-color: #a6ff00; width: max-content;">
+            <h1>boxAfter</h1>
+            <p id="boxAfter"></p>
+        </div>
+    </div>
+
+    <script>
+        let boxBefore = document.getElementById('boxBefore');
+        let boxAfter = document.getElementById('boxAfter');
+
+        let xhr = new XMLHttpRequest();
+        let url = "https://jsonplaceholder.typicode.com/users";
+
+        xhr.open("get", url);
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+
+                let data = JSON.parse(xhr.responseText)
+                let users = JSON.stringify(data, null, 2);
+
+                boxBefore.innerText = users
+            }
+        }
+
+        xhr.send()
+
+
+        // =================================================================
+
+        let xhrTwo = new XMLHttpRequest();
+        let urlChange = "https://jsonplaceholder.typicode.com/users";
+
+        xhrTwo.open("post", urlChange);
+
+        xhrTwo.setRequestHeader('Content-Type', 'application/json;charset=UTF-8'
+        );
+
+        xhrTwo.onload = () => {
+            if (xhrTwo.status === 201) {
+
+                let data = JSON.parse(xhrTwo.responseText)
+                let users = JSON.stringify(data, null, 2);
+
+                boxAfter.innerText = users
+            }
+        }
+
+        let newUser = {
+            name: "raghaw",
+            email: "john@example.com",
+            phone: "123-456-7890"
+        }
+
+        xhrTwo.send(JSON.stringify(newUser));
+    </script>
+
+</body>
+
+</html>
