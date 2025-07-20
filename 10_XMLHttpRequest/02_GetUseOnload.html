@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <h1>Hello, World!</h1>
+    <p>We are fetching data using <code>onload</code>, which is triggered after the request is sent and successfully
+        completed.</p>
+    <p>This method works only when the request is successful (i.e., status code 200).</p>
+
+    <div id="box" style="width: max-content; height: max-content; background-color: rgb(165, 24, 24);"></div>
+    <script>
+        let box = document.getElementById('box');
+
+        // Url store in variable
+        let url = 'https://jsonplaceholder.typicode.com/users';
+
+        // This creates a new XHR object.
+        let xhr = new XMLHttpRequest();
+
+        // This prepares the request, but doesn’t send it yet.
+        xhr.open("GET", url);
+
+
+        // Handling the Response
+        xhr.onload = () => {
+            if (xhr.status == 200) {
+                let data = JSON.parse(xhr.responseText);
+                box.innerText = JSON.stringify(data, null, 2); // Pretty print
+            }
+        }
+
+        // The Actual Request Is Sent
+        xhr.send();
+
+    </script>
+</body>
+
+</html>

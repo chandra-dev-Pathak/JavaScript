@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <h1>Hello, World!</h1>
+    <p>We are fetching data using <code>onreadystatechange</code>, which allows us to track every stage of the request.
+    </p>
+
+    <div id="box" style="width: 400px; padding: 10px; border: 4px solid #ffea00;"></div>
+
+    <script>
+        let box = document.getElementById('box');
+
+        // Url store in variable
+        let url = 'https://jsonplaceholder.typicode.com/users';
+
+        // This creates a new XHR object.
+        let xhr = new XMLHttpRequest();
+
+        // This prepares the request, but doesn’t send it yet.
+        xhr.open("GET", url);
+
+
+        // Handling the Response Of all Stage
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let data = JSON.parse(xhr.responseText);
+                box.innerText = JSON.stringify(data, null, 2); // Pretty print
+            }
+        }
+
+
+        // The Actual Request Is Sent
+        xhr.send();
+
+    </script>
+</body>
+
+</html>
