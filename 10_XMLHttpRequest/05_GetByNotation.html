@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <h1>Hello, World!</h1>
+    <p>We are fetching data using <code>XMLHttpRequest</code> with error handling.</p>
+    <p>when we want to check error So off internet and some Typo in url</p>
+    <div id="box" style="width: max-content; padding: 10px; border: 3px solid #ff2020;">
+        <div id="getAll"></div>
+        <hr>
+        <div id="getOne"></div>
+        <hr>
+        <div id="getOnlyOne"></div>
+    </div>
+
+    <script>
+        let box = document.getElementById('box');
+        let getAll = document.getElementById('getAll');
+        let getOne = document.getElementById('getOne');
+        let getOnlyOne = document.getElementById('getOnlyOne');
+
+        // Url store in variable
+        let url = 'https://jsonplaceholder.typicode.com/users';
+
+        // This creates a new XHR object.
+        let xhr = new XMLHttpRequest();
+
+        // This prepares the request, but doesn’t send it yet.
+        xhr.open("GET", url);
+
+        // Request Stop if data Is Not Respone In 5 seconds
+        xhr.timeout = 5000
+
+        // Handling the Response Of all Stage
+
+        // using readyState in onload xhr.readyState === 4 is always true inside xhr.onload, because onload only fires after the request is fully completed... 
+        xhr.onload = () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let data = JSON.parse(xhr.responseText);
+                for (let i = 0; i < data.length; i++) {
+                    getAll.innerText = JSON.stringify(data, null, 2);
+                }
+
+                data.forEach(element => {
+                    if (element.id === 1) {
+                        getOne.innerText = JSON.stringify(element, null, 2);
+                    }
+                });
+
+                getOnlyOne.innerText = data[0].email
+            }
+        }
+
+        // Handle network error (like no internet)
+        xhr.onerror = () => {
+            box.innerHTML = `<p style="color:red;"> Network error. Please check your internet connection.</p>`;
+        };
+
+
+        // Handle timeout error
+        xhr.ontimeout = () => {
+            box.innerHTML = `<p style="color:orange;"> Request timed out after 5 seconds.</p>`;
+        };
+
+        // Always called after response/error/timeout
+        xhr.onloadend = () => {
+            let p = document.createElement('p')
+            p.innerText = " Request finished (success or fail)."
+            box.appendChild(p)
+        };
+
+        // The Actual Request Is Sent
+        xhr.send();
+
+    </script>
+</body>
+
+</html>
