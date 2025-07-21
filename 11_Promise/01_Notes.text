@@ -51,3 +51,18 @@ Once you have a Promise, you need to consume it to get the result or handle the 
 ** .finally(): Runs Regardless of Outcome **
 
 .finally() always runs after the Promise settles (whether it was fulfilled or rejected).
+
+=========================   Close File ctrl + B    ========================>>>> 
+
+Task Type          |Real Example            |JS Code Example                        | Async          |
+-------------------|------------------------|---------------------------------------|----------------|
+Timer              |Alarm set karna         |`setTimeout`, `setInterval`            | Time delay     |
+API Call           |Weather app data fetch  |`fetch()`, `axios.get()`               | Server         |
+File Reading       |Mobile me PDF open karna|`fs.readFile()` (Node.js)              | File disk      |
+Camera Access      |Photo click             |`navigator.mediaDevices.getUserMedia()`| Hardware       |
+Audio/Video Load   |YouTube video play      |`video.play()`                         | Buffer/load    |
+User Input Wait    |User ka form bharna     |`onclick`, `onchange`                  | Utill user I/O |
+Bluetooth/WiFi Scan|Devices scan karna      |Web Bluetooth API                      | External       |
+Database Query     |Student record fetch    |MongoDB/MySQL query                    | DB data        |
+Game Asset Load    |Game graphics load      |`Image.onload`, `audio.load()`         | File loads     |
+Import module      |Dynamic module load     |`import()`                             | Module download|
