@@ -71,4 +71,4 @@ new Promise((res, rej) => {
 // | 1     | `.then()` ya `.catch()` (whichever applies) |
 // | 2     | `.finally()`                                |
 
-// So event loop throw firstly then, catch
+// So event loop throw firstly then, catch.
