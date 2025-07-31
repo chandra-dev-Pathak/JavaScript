@@ -175,17 +175,51 @@ async function loadUser(userId) {
     }
 }
 
-loadUser(1);        // ✅ success
-loadUser(9999);     // ❌ HTTP 404 error
-loadUser("wrong");  // ❌ may result in malformed response
+loadUser(1);        // success
+loadUser(9999);     // HTTP 404 error
+loadUser("wrong");  // may result in malformed response
 
 // =============================================================================
 // Summary (Notes):
 // ----------------------------------------------------------------------------
-// ✅ Use response.ok to detect HTTP errors
-// ✅ Use try...catch to handle network errors
-// ✅ Check Content-Type before parsing JSON
-// ✅ Manually validate critical fields in response data
-// ✅ Centralize all logic in a reusable function
-// ✅ Return consistent structure: { data, error }
+// Use response.ok to detect HTTP errors
+// Use try...catch to handle network errors
+// Check Content-Type before parsing JSON
+// Manually validate critical fields in response data
+// Centralize all logic in a reusable function
+// Return consistent structure: { data, error }
 // =============================================================================
+
+// Quick Table To Recoll Error:--
+
+// -----+------------- + -----------------------------------------------------------
+// Code |Name          | Meaning & When It Occurs
+// -----+------------- + -----------------------------------------------------------
+// 1xx  |Informational | Request received, still processing. Rare in APIs.
+//      |              | Example: 100 Continue, 101 Switching Protocols
+// -----+------------- + -----------------------------------------------------------
+// 2xx  |Success       | Request was successful.
+//      |              | Example:
+//      |              |   200 OK          – Success (GET, POST, etc.)
+//      |              |   201 Created     – Resource created (POST)
+//      |              |   204 No Content  – Success, no body returned
+// -----+------------- + -----------------------------------------------------------
+// 3xx  |Redirection   | Resource moved or needs further action.
+//      |              | Example:
+//      |              |   301 Moved Permanently – Resource moved to another URL
+//      |              |   302 Found             – Temporary redirect
+//      |              |   304 Not Modified     – Cached version is still valid
+// -----+------------- + -----------------------------------------------------------
+// 4xx  |Client Error  | Problem with the request (your code, bad input, no auth).
+//      |              | Example:
+//      |              |   400 Bad Request    – Malformed syntax or invalid input
+//      |              |   401 Unauthorized   – Missing/invalid auth
+//      |              |   403 Forbidden      – No permission
+//      |              |   404 Not Found      – Resource doesn't exist
+// -----+------------- + -----------------------------------------------------------
+// 5xx  |Server Error  | Server failed to handle the request.
+//      |              | Example:
+//      |              |   500 Internal Server Error – Server crashed or bug
+//      |              |   502 Bad Gateway          – Invalid response from upstream
+//      |              |   503 Service Unavailable – Server busy or down
+// -----+------------- + -----------------------------------------------------------
