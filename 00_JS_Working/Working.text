@@ -1,0 +1,128 @@
+-------------------------------------------------------------------------------------
+
+# Step 1: Running `demo.js` using Node.js
+
+**1. Open the Terminal:**  
+First, open your terminal or command prompt in VS Code.  
+- Example: On Windows, you can press `Ctrl + ~` to open the terminal.  
+- On Mac, you can press `` Cmd + ` ``.  
+
+**2. Type the Command:**  
+Type `node demo.js` and press Enter.  
+- Here, `node` tells your computer to use Node.js to run JavaScript.  
+- `demo.js` is the file you want Node.js to run.  
+
+**3. The Shell’s Role:**  
+The terminal uses a program called a **shell** (like Bash, Zsh, or PowerShell) to read your command.  
+- The shell splits the command into two parts:  
+  1. `node` → the program to run  
+  2. `demo.js` → the argument (the file Node.js should run)  
+
+**4. Finding the Node.js Executable:**  
+The shell looks in the **PATH** variable, which is a list of folders where programs are installed.  
+- It searches these folders to find the Node.js executable file.  
+
+**5. Loading Node.js:**  
+Once the shell finds the Node.js file, it tells the **kernel** (the core of your operating system) to start a new process and load Node.js into memory.  
+
+**6. Passing the Script:**  
+The `demo.js` file is passed as an **argument** to Node.js.  
+- Node.js now knows which file it should run.  
+
+**7. Starting/Preparing the Node.js Environment:**  
+Node.js sets up everything it needs to run your code:  
+- Prepares **global objects** like `process`, `console`, and `require`.  
+- Sets up **input/output streams** (STD-IN, STD-OUT, STD-ERR).  
+- Reads the command-line arguments (`demo.js` in this case).  
+
+> **Step 1 Complete:** Node.js is now ready to read and execute your `demo.js` file.
+
+-------------------------------------------------------------------------------------
+
+# Step 2: Node.js Sets Up Its Environment Before Running Your Code
+
+**1. Environment Initialization:**  
+Before running your script, Node.js prepares its **runtime environment**.  
+- This includes setting up **global objects** like:  
+  - `process` → stores information about your program and system (like command-line arguments and environment variables).  
+  - `console` → lets you print messages to the terminal.  
+  - `global` → lets you store variables accessible anywhere in your code.  
+  - `require` → allows you to import other JavaScript files or modules.  
+
+**2. Reading Command-line Arguments:**  
+Node.js reads the arguments you passed in the command.  
+- Example: `node demo.js arg1 arg2`  
+  - `process.argv[0]` → Node.js executable path  
+  - `process.argv[1]` → path to `demo.js`  
+  - `process.argv[2]` → `"arg1"`  
+  - `process.argv[3]` → `"arg2"`  
+
+**3. STDIO Setup:**  
+Node.js prepares standard input, output, and error streams.  
+- Example: `console.log()` writes to STDOUT, errors go to STDERR, and you can read input from STDIN.
+
+**4. Module System Initialization:**  
+Node.js sets up its **module loader**, so your code can use `require()` or `import` to load other files or libraries.  
+
+**5. Event Loop Setup:**  
+Node.js initializes the **event loop**, which handles asynchronous operations like:  
+- Reading/writing files  
+- Network requests  
+- Timers (`setTimeout`, `setInterval`)  
+
+**6. Ready to Execute Your Script:**  
+After all this setup, Node.js is fully ready to start reading your `demo.js` code **line by line** and execute it.  
+
+> **Step 2 Complete:** Node.js has initialized everything it needs. Your script can now run correctly.
+
+-------------------------------------------------------------------------------------
+
+# Step 3: Node.js Executes Your `demo.js` Code
+
+**1. Reading the Script:**  
+Node.js starts reading your `demo.js` file **line by line** from top to bottom.
+
+**2. Executing Synchronous Code:**  
+- Synchronous code runs **immediately**, one line at a time.  
+- Example in `demo.js`:
+  ```javascript
+  console.log("Hello");
+  console.log("World");
+
+  Output will be:-
+            Hello
+            World
+
+**3. Handling Asynchronous Code:**
+
+-Some operations, like reading files or network requests, do not run immediately. Node.js uses the event loop to handle them.
+
+-Example:
+setTimeout(() => {
+  console.log("This runs later"); Asynchronous task
+}, 2000);
+console.log("This runs first"); Synchronous task
+
+This runs first -> Synchronous task
+This runs later -> Asynchronous task
+
+**4. Loading Modules:**
+
+If your code uses require() or import, Node.js loads those files or libraries before or during execution.
+
+Example:-
+
+const fs = require('fs');
+fs.readFile('file.txt', 'utf8', (err, data) => {
+  console.log(data);
+});
+
+Node loads the fs module, then runs the asynchronous file read.
+
+**5. Completing Execution:**
+
+Node.js continues executing all remaining code, including asynchronous callbacks from the event loop.
+
+When there is no more code to run and no pending events in the event loop, Node.js stops the process.
+
+Step 3 Complete: Your script has finished running. Node.js process exits automatically when nothing is left to do.
