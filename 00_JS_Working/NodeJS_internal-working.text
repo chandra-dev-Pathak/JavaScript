@@ -1,0 +1,321 @@
+Node.js Deep Internals 
+
+=====================================================================================
+
+--- Step 1: V8 Engine 
+
+-------------------------------------------------------------------------------------
+
+**1) What V8 does and does not do**
+
+V8 does:-
+
+--Execute JavaScript (JS) code.
+Meaning: V8 runs your JS code line by line, evaluates expressions, calculates values, and calls functions.
+
+--Create Execution Contexts (Global, Function, Eval).
+Meaning: V8 sets up containers for running code. Each container knows which variables exist, which functions can be called, and what this is.
+
+--Manage the Call Stack (function frames) and Heap (objects, arrays, closures).
+Call Stack: Tracks which function is currently running. Last called function is executed first (LIFO).
+Heap: Stores objects, arrays, closures, anything that needs long-term memory.
+
+--Compile JS → Bytecode (Ignition) → Optimized machine code (TurboFan).
+V8 doesn’t run plain JS directly—it compiles it in steps:-
+Ignition → interprets JS into bytecode quickly.
+TurboFan → optimizes frequently used code into machine code for speed.
+
+--Run the Microtask queue (Promises, queueMicrotask).
+V8 handles microtasks after each main task is finished.
+Promises (.then/.catch) or queueMicrotask() are executed before the next timer or event.
+
+--Garbage‑collect memory.
+V8 automatically frees memory for variables and objects that are no longer reachable.
+You don’t have to manually delete variables; V8 cleans up to avoid memory leaks.
+
+V8 does NOT do:-
+
+--File I/O, sockets, timers, DNS, etc. (Those are handled by Node.js + libuv.)
+Meaning: V8 cannot access the outside world directly.
+Things like reading a file, sending network requests, or using timers are handled by Node.js and libuv.
+V8 only runs JS logic; Node.js + libuv interact with OS, files, and network.
+
+-------------------------------------------------------------------------------------
+
+**2) From source code to running code (pipeline)**
+
+--Parse: Your JS text is tokenized and turned into an AST (Abstract Syntax Tree). Scope info is collected here.
+
+--Ignition (Interpreter): AST → Bytecode. Execution starts quickly from this bytecode.
+
+--Profiling & Type Feedback: While running, V8 records how your code behaves (argument types, object shapes).
+
+--TurboFan (JIT Optimizer): Hot functions get compiled into optimized machine code using the recorded feedback.
+
+--Deoptimization: If assumptions break (e.g., value types change), V8 falls back from optimized code to bytecode.
+
+Result: fast startup (interpreter) + high speed later (JIT).
+
+-------------------------------------------------------------------------------------
+
+**3) Execution Contexts (who makes them? what’s inside?)**
+
+--V8 creates and manages all Execution Contexts.
+
+-Global EC: created when your script starts.
+
+-Function EC: created for each function call.
+
+-Eval EC: created when eval runs.
+
+--Each EC contains:-
+
+-Lexical Environment: let/const bindings and scopes.
+
+-Variable Environment: var bindings.
+
+-ThisBinding: the value of this for that context.
+
+--Creation vs Execution phase (a.k.a. “hoisting” rules):
+
+-Creation: scopes are set up; function declarations are initialized; var is created (value = undefined); let/const exist but are in TDZ (Temporal Dead Zone).
+
+-Execution: statements run, values assigned, closures formed.
+
+-------------------------------------------------------------------------------------
+
+**4) Memory model: Call Stack vs Heap**
+
+--Call Stack (inside V8):
+
+-Holds stack frames for active function calls.
+
+-Push on call → pop on return.
+
+--Heap (inside V8):
+
+Stores objects, arrays, functions, closures, strings.
+
+-Organized spaces:
+
+-New Space (young / nursery) → short‑lived objects.
+
+-Old Space → long‑lived objects.
+
+-Large Object Space → very big allocations.
+
+-Code Space → JIT‑compiled machine code.
+
+Closures keep references to outer variables → those captured values live on the heap so they outlive the stack frame.
+
+-------------------------------------------------------------------------------------
+
+**5) Microtasks (Promises) vs Macrotasks (high‑level view)**
+
+--Microtasks: Promise reactions (.then/.catch/.finally) and queueMicrotask.
+
+--V8 drains the microtask queue after each task/callback completes.
+
+--In Node.js specifically, process.nextTick has even higher priority than microtasks 
+
+setTimeout(() => console.log("macrotask: timer"), 0);
+Promise.resolve().then(() => console.log("microtask: promise"));
+console.log("sync");
+// Output:
+// sync
+// microtask: promise
+// macrotask: timer
+
+------------------------------------------------------------------------------------- 
+
+**6) Garbage Collection (GC) — how memory is freed**
+
+--V8 uses generational + incremental + concurrent GC so pauses stay small.
+
+-Minor GC (Scavenge): cleans the New Space frequently; surviving objects get promoted to Old Space.
+
+-Major GC (Mark‑Sweep/Mark‑Compact): cleans the Old Space less often.
+
+-Incremental/Concurrent: GC work is split into small pieces and some parts run alongside execution.
+
+You don’t manually free memory; V8 frees unreachable objects.
+
+-------------------------------------------------------------------------------------
+
+Recape V8 step by step what should do:- 
+
+1. Stack & Heap exist (empty, ready to use)
+
+2. Creation Phase
+
+--EC pushed to stack
+--Variables/function hoisted
+--Scope chain & this set up
+
+3. Execution Phase
+
+--Statements run, values assigned
+--Functions called → new EC pushed
+
+4. Synchronous Handling
+
+--Sync code runs immediately
+--Async code scheduled via Node/libuv
+--V8 handles microtasks after current EC finishes
+
+=====================================================================================
+
+--- Step 2: libuv & Event Loop
+
+**1) Why libuv exists**
+
+--V8 is just a JS engine → it can’t read files, wait for timers, or talk to the network.
+--Node.js uses libuv, a C library, to handle:-
+-Timers (setTimeout, setInterval)
+-I/O (files, sockets, DNS, HTTP, etc.)
+-Thread pool for expensive operations (crypto, compression, fs operations)
+-The Event Loop
+
+Think of libuv as Node’s engine room where async tasks are scheduled and processed.
+
+-------------------------------------------------------------------------------------
+
+**2) The Event Loop (core idea)**
+
+-The event loop runs in a cycle (called ticks).
+-It checks if there’s any pending work, executes it, then moves to the next phase.
+-Keeps looping until no more tasks are left.
+-That’s why Node.js is called non-blocking → instead of waiting, tasks are scheduled.
+
+-------------------------------------------------------------------------------------
+
+**3) Event Loop Phases (in order)**
+
+Each tick of the loop has 6 phases.
+
+1. Timers Phase**
+--- Executes callbacks from setTimeout and setInterval whose time expired.
+
+--Flow in depth:
+
+-JS schedules timer → setTimeout(() => { … }, 1000)
+-libuv stores timer with absolute expiry timestamp in its internal timer heap.
+-When a tick enters Timers Phase, libuv checks all timers:
+-If current_time >= timer_expiry → move callback to callback queue
+-Node.js asks V8 to execute each callback one by one (synchronously, on call stack).
+
+--Depth Notes:
+
+-V8 only executes the JS code. It does not manage timing.
+-libuv manages the timer queue and expiry checking.
+-If JS callback is heavy, next tick may be delayed.
+
+2. Pending Callbacks Phase**
+--- Executes some system-level callbacks, like TCP errors or deferred OS events. (rarely used directly in user code).
+
+--Flow in depth:
+
+-libuv keeps a list of pending callbacks from OS.
+-During this phase, each callback is moved to JS callback queue.
+-V8 executes the callback on the stack.
+
+--Depth Notes:
+
+-Rarely used directly by users.
+-Mostly used internally for network cleanup, async error handling.
+
+3. Idle / Prepare Phase**
+--- Only internal libuv use.
+
+--What happens:
+
+-Internal phase only for libuv.
+-Prepares the loop for polling I/O events.
+
+--Depth Notes:
+
+-V8 is not involved.
+-libuv sets up polling structures, timers, file descriptors.
+
+4. Poll Phase (The Heart)**
+--- The heart of the loop.
+
+--What happens:
+
+-Waits for I/O events (network, filesystem).
+-Runs callbacks for completed I/O.
+
+--Flow in depth:
+
+-JS code requests async I/O → libuv sends request to OS thread pool (or kernel).
+-OS signals completion → libuv adds callback to poll queue.
+-Poll phase picks each callback → asks V8 to run it.
+
+--Special Case:
+
+-If no I/O is ready:
+-Poll waits for max 0 or until timer expires
+-Can move immediately to timers/check phases
+
+--Depth Notes:
+
+-This phase is the main reason Node.js is non-blocking.
+-Heavy JS in V8 can delay I/O callbacks, because JS runs single-threaded.
+
+5. Check Phase**
+--- Executes setImmediate callbacks.
+
+--What happens:
+
+-Executes setImmediate callbacks.
+
+--Depth Notes:
+
+-setImmediate is always executed after poll phase.
+-libuv moves callbacks from check queue → V8 executes synchronously.
+-V8 call stack is filled by each callback one by one.
+
+6. Close Callbacks**
+--- Runs cleanup callbacks like socket.on("close", …).
+
+--What happens:
+
+-Executes cleanup callbacks, e.g., [ socket.on('close', () => { … }) ]
+
+--Depth Notes:
+
+-Mainly for resource cleanup after network/socket/file close.
+-libuv triggers the callback → V8 executes JS code.
+
+-------------------------------------------------------------------------------------
+
+**4) Special queues inside Node.js**
+
+--- Besides the normal phases, Node.js has two special priority queues:
+
+--process.nextTick Queue:
+
+-Runs immediately after the current operation finishes(sync),
+-Even before microtasks (Promises).
+-Higher priority than everything else.
+
+--Microtask Queue (V8):
+
+-Contains Promise.then/.catch/.finally and queueMicrotask.
+-Runs right after current function/task finishes, but after nextTick.
+
+-------------------------------------------------------------------------------------
+
+**5) Thread Pool in libuv**
+
+--Some async tasks are too heavy to run on the event loop (they’d block).
+--libuv uses a thread pool (default size = 4 threads).
+
+--Used for:
+-File system operations (fs.readFile, fs.writeFile)
+-Crypto (pbkdf2, hashing, encryption)
+-Compression (zlib)
+
+--These threads finish the work and then send result back to the event loop, which calls your callback.
+
+-------------------------------------------------------------------------------------
