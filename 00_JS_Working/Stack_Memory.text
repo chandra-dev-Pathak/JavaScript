@@ -1,0 +1,175 @@
+=========================================================================================
+=========================================================================================
+
+1. Stack Memory (Call Stack static memory)
+
+---------------------------------------------------------------------------------------
+
+** What is Stack Memory? **
+
+Stack memory is a region of memory inside the V8 engine dedicated to function execution contexts and primitive values.
+
+** What gets stored in the Stack? **
+-Function calls (execution contexts)
+-Local variables
+-Primitive values (numbers, booleans, undefined, null, symbols).
+-References to heap objects: objects, arrays, functions themselves live in heap, but stack stores their reference.
+
+** Work flow of stack **
+--LIFO (Last-In-First-Out):
+-Last function called is first to be removed after execution.
+
+** How stack free memory **
+--Automatically managed:
+-When a function finishes, its memory is automatically cleaned.
+
+** Key point **
+JavaScript has only one stack → single-threaded execution.
+Fast access – CPU can manage stack memory very efficiently.
+Stack size is limited → deep recursion can cause stack overflow.
+Stack stores only references to heap objects for larger data like objects or arrays.
+
+---------------------------------------------------------------------------------------
+
+** How it Works **
+
+--When JS code runs, V8 creates a global execution context and pushes it onto the call stack.
+
+--Every time a function is called:
+
+-A new execution context is created for that function.
+-Local variables and references are stored in the stack.
+
+--When the function returns:
+ 
+-Its context is popped off the stack.
+-Memory is freed.
+
+** What happens when we call a function **
+
+Let’s call foo() -> Steps inside V8:
+
+1. A new Execution Context (EC) is created for foo.
+2. Inside EC, V8 prepares:
+-Scope (lexical + variable environments).
+-Hoisted var/functions.
+-The this binding.
+
+3. That EC is pushed onto the call stack.
+4. Code runs inside foo.
+5. When it returns → EC popped off.
+
+** What’s inside one stack frame **
+
+--Each function’s frame holds:-
+
+-Return address → where to continue after finishing.
+-Arguments + local variables.
+-Reference to closure/environment (on heap).
+-this value.
+-Engine metadata.
+
+--Think of it as:-
+
+-Fast access stuff = inside the frame.
+-Heavy objects = pointer to heap.
+
+---------------------------------------------------------------------------------------
+
+** How Stack Works Step by Step **
+1. Global Execution Context is created first → pushed onto stack.
+2. When a function is called:
+--New execution context is created:
+-Local variables
+-Function arguments
+-this binding
+3. Function runs:
+--Stack keeps track of which function is currently executing.
+4. Function returns:
+--Stack pops the execution context.
+--Memory is freed.
+5. Stack moves to the previous context.
+6. When all functions complete → Global Execution Context ends → stack is empty.
+
+---------------------------------------------------------------------------------------
+** Interaction with Heap **
+
+--Heap stores objects and functions because they can be large and variable-sized.
+--Stack stores references to heap objects.
+--This keeps stack memory small and fast, while heap handles bigger memory.
+
+---------------------------------------------------------------------------------------
+
+** Stack & Recursion (Advanced) **
+
+--Each recursive call adds a new execution context → stack grows.
+--If recursion is too deep → stack overflow.
+
+function recurse(n) {
+    console.log(n);
+    recurse(n + 1);
+}
+recurse(1); // Will eventually throw "RangeError: Maximum call stack size exceeded"
+
+--Stack keeps growing until memory limit is reached.
+
+---------------------------------------------------------------------------------------
+
+** Stack & Async **
+
+--Stack only executes synchronous code.
+--Async tasks (timers, network requests) do not run directly in stack:
+-They are handled by Libuv and queues.
+-When the callback is ready, V8 creates a new execution context and pushes it to the stack.
+
+setTimeout(() => {
+    console.log("Async!");
+}, 1000);
+console.log("Sync!");
+
+-Stack first executes "Sync!"
+-Async callback waits in macro task queue
+-After 1s, V8 pushes callback to stack → executes "Async!"
+
+---------------------------------------------------------------------------------------
+
+** Closures (variables that “survive” the stack) **
+
+function outer() {
+  let count = 0; 
+  return function inner() {
+    count++; 
+    return count;
+  }
+}
+const next = outer();
+
+--outer() finishes → its frame popped.
+--BUT count still exists because inner uses it.
+--Solution: V8 moved count into a heap environment object.
+--inner keeps a pointer → so captured values outlive the stack.
+That’s how closures work.
+
+---------------------------------------------------------------------------------------
+
+** Performance rules (stack-related) **
+
+--Don’t block the stack with long loops → event loop pauses.
+--Split heavy work into chunks.
+--Stable function shapes help V8 inline (faster stack ops).
+--try/catch in hot code paths can slow optimization.
+
+** Stack overflow **
+
+--Stack memory is small (a few MB).
+--Too many nested calls = RangeError: Maximum call stack size exceeded.
+
+--Avoid with:
+
+-Iteration instead of recursion.
+-Break work using setImmediate, setTimeout(…,0), or queueMicrotask.
+
+---------------------------------------------------------------------------------------
+
+Tip: Every async function, Promise callback, setTimeout callback does NOT run in the stack immediately. It is scheduled in the microtask/macro task queues, and its function context is created later when V8 executes it.
+
