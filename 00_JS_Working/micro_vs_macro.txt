@@ -1,0 +1,116 @@
+**Microtasks vs Macrotasks in Node.js & V8**
+
+**1) The Big Picture**
+
+When JavaScript code executes, after every execution context, Node.js/V8 checks certain queues to determine what runs next. These queues are:
+
+* **Microtask Queue**: Tiny, high-priority tasks that should execute before any macrotask.
+* **Macrotask Queue**: Scheduled tasks that are bigger and usually represent timers, I/O callbacks, or setImmediate in Node.js.
+
+**Rule:** Microtasks always execute before the next macrotask.
+
+**2) Microtasks (inside V8)**
+
+**Examples:**
+
+* Promise.then, Promise.catch, Promise.finally
+* queueMicrotask
+* MutationObserver (browser only)
+
+**Features:**
+
+* Very high priority.
+* Executes immediately after the current stack finishes, **before any timers or I/O**.
+* Fully drains: all microtasks run until the queue is empty.
+
+**Example:**
+
+console.log("A");
+Promise.resolve().then(() => console.log("B"));
+console.log("C");
+// Output:
+// A
+// C
+// B
+
+**Explanation:**
+
+* "A" prints first because it's synchronous.
+* "C" prints second, still synchronous.
+* Promise callback is microtask, executes immediately after stack finishes.
+
+**3) Macrotasks (scheduled callbacks)**
+
+**Examples:**
+
+* setTimeout, setInterval
+* setImmediate (Node.js only)
+* I/O callbacks (network, fs)
+
+**Features:**
+
+* Run in later phases of the event loop.
+* After a macrotask finishes, all microtasks queued during its execution will run before next macrotask.
+
+**Example:**
+
+setTimeout(() => console.log("timeout"), 0);
+setImmediate(() => console.log("immediate"));
+
+* Actual execution order can vary slightly depending on Node.js version and context.
+
+**4) Node.js twist: process.nextTick**
+
+**Special queue** that runs **before microtasks**.
+
+**Execution priority:**
+
+1. Current stack finishes
+2. All process.nextTick callbacks
+3. Microtasks (Promises)
+4. Macrotasks (timers, I/O, etc.)
+
+**Example:**
+
+setTimeout(() => console.log("timeout"), 0);
+Promise.resolve().then(() => console.log("promise"));
+process.nextTick(() => console.log("nextTick"));
+console.log("sync");
+
+// Output:
+// sync
+// nextTick
+// promise
+// timeout
+
+**Explanation:**
+
+* Synchronous code prints first.
+* process.nextTick runs immediately after stack.
+* Microtasks (Promises) execute next.
+* Macrotasks (setTimeout) run last.
+
+**5) Event Loop Integration**
+
+1. Run main synchronous code.
+2. Drain process.nextTick queue (Node-only).
+3. Drain microtask queue (Promises, queueMicrotask).
+4. Pick next macrotask from macrotask queue (timer callback, I/O callback, setImmediate).
+5. After each macrotask, microtasks that were queued during its execution run immediately.
+6. Repeat until all tasks are completed.
+
+**Key Point:** Microtasks “sneak in” between every macrotask, ensuring high-priority tasks execute quickly.
+
+**6) Why This Matters**
+
+* Correctly understanding execution order prevents bugs and race conditions.
+* Misplaced assumptions about when a callback will execute can break logic.
+* nextTick can starve the event loop if abused (e.g., infinite scheduling).
+* Promises ensure microtasks run before timers, keeping predictable order.
+
+**Summary:**
+
+* Microtasks: super high priority, drained after stack.
+* Macrotasks: scheduled async callbacks, run in event loop phases.
+* process.nextTick: Node-only, runs before microtasks.
+* Understanding these queues is critical to avoiding unexpected async behavior in Node.js.
