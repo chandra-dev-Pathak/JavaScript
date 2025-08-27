@@ -1,0 +1,211 @@
+# Node.js Thread Pool (libuv) — Deep Dive
+
+## 1. What is the Thread Pool?
+
+* Node.js itself is **single-threaded** for running JS code (via V8).
+* But many operations in Node (file system, crypto, DNS, compression, etc.) are **not handled by the main JS thread**.
+* Instead, these tasks are sent to a **thread pool** managed by **libuv**.
+* Think of it as Node’s “helper workers” in the background.
+
+## 2. How many threads are there?
+
+* By default: **4 threads** in the libuv thread pool.
+* Configurable via env var: `UV_THREADPOOL_SIZE` (can be up to 128).
+* Increasing size may help if you have many concurrent heavy async tasks (e.g., lots of crypto or fs operations).
+
+## 3. What goes into the Thread Pool?
+
+Thread pool handles *non-blocking async tasks* that cannot be done by OS kernel directly.
+
+Examples:
+
+* `fs.*` operations (like `fs.readFile`, `fs.writeFile`) — because disk I/O isn’t always async in OS.
+* `crypto.pbkdf2`, `crypto.scrypt`, `crypto.randomBytes`, etc. — heavy CPU-bound work.
+* `zlib.*` compression/decompression.
+* Some DNS lookups (like `dns.lookup`).
+
+ What does *NOT* go to thread pool?
+
+* Networking (TCP/UDP/HTTP) — OS kernel handles that via events, not the thread pool.
+* Timers (`setTimeout`, `setInterval`) — managed by libuv timer wheel.
+
+## 4. Lifecycle: How a task flows into the thread pool
+
+1. JS code calls async API (e.g., `fs.readFile`).
+2. Node’s C++ bindings forward request to **libuv**.
+3. libuv checks if this needs a background thread → if yes, it pushes job into **thread pool queue**.
+4. One of the available threads picks it up and runs it.
+5. After completion, result (or error) is passed back to the **event loop**.
+6. Event loop schedules your callback in the appropriate **phase** (usually the poll phase).
+
+
+## 5. Example Walkthrough
+
+const fs = require("fs");
+
+console.log("A: start");
+
+fs.readFile("bigfile.txt", "utf8", (err, data) => {
+  if (err) throw err;
+  console.log("B: file read complete");
+});
+
+console.log("C: end");
+
+👉 What happens here?
+
+* `A: start` prints (sync).
+* `fs.readFile` call:
+
+  * Node forwards this to libuv.
+  * libuv pushes task → thread pool.
+* `C: end` prints (sync, still main thread).
+* Meanwhile, a worker thread reads file in background.
+* When done, it signals event loop → poll phase.
+* Callback runs → `B: file read complete` prints.
+
+## 6. Thread Pool vs Event Loop
+
+* **Event loop** = Scheduler, decides *when* callbacks run.
+* **Thread pool** = Workers, *do the actual heavy lifting* in parallel.
+
+Think of it like:
+
+* Event loop = Restaurant manager (takes orders, serves finished meals).
+* Thread pool = Kitchen staff (cooking multiple meals at once).
+
+## 7. Scaling & Performance Notes
+
+* **CPU-bound tasks** (crypto, zlib) → thread pool helps, but only up to its size. If all 4 threads are busy, others must wait.
+* **I/O-bound tasks** (file system) → also use thread pool, but disk speed may be bottleneck.
+* You can increase `UV_THREADPOOL_SIZE` if your workload needs it:
+
+  UV_THREADPOOL_SIZE=8 node app.js
+
+* But too many threads can cause context switching overhead.
+
+## 8. Common Mistakes
+
+* Assuming all async tasks use thread pool — **wrong** (network I/O doesn’t).
+* Forgetting `UV_THREADPOOL_SIZE` limit — many async fs/crypto calls can cause hidden queuing.
+* Mixing CPU-heavy work in JS main thread → blocks event loop → thread pool can’t save you.
+
+## 9. Visual Mental Model
+
+JS Code (main thread)
+   ↓
+Node C++ bindings
+   ↓
+libuv
+   ├─ Event Loop (scheduler)
+   └─ Thread Pool (workers)
+         ├─ Worker 1: fs.readFile
+         ├─ Worker 2: crypto.pbkdf2
+         ├─ Worker 3: zlib.gzip
+         └─ Worker 4: fs.stat
+
+* Event loop delegates heavy tasks → workers.
+* Workers finish → results passed back → event loop puts callback into right phase → JS callback runs.
+
+
+## 10. Summary
+
+* Node.js JS code = single thread.
+* Heavy async tasks (fs, crypto, zlib, dns) = offloaded to **libuv thread pool**.
+* Default = 4 threads, configurable up to 128.
+* Event loop schedules callbacks *after* workers finish.
+* Thread pool prevents blocking main thread, but has limits.
+
+====================================================================================
+------------------------------------------------------------------------------------
+====================================================================================
+
+# Node.js Deep Internals — Worker Threads (Step by Step)
+
+## 1) Why Worker Threads exist
+
+* JavaScript in Node runs on **a single main thread** (event loop).
+* If you run CPU-heavy code (e.g., image processing, parsing huge JSON, encryption loops), it **blocks** the event loop.
+* Blocking means no timers, no requests, no async code can proceed — everything “freezes”.
+* To solve this, Node gives us **Worker Threads**, where you can run JS code on **separate threads** in parallel.
+
+They’re not the same as the **libuv thread pool**:
+
+* Thread pool is internal, for async C++-level tasks (fs, crypto).
+* Worker threads are for **your own JS code**, explicitly created by you.
+
+## 2) What a Worker Thread is
+
+* Each worker thread = a full **separate V8 instance** + its own **event loop** + its own **JS heap**.
+* That means workers don’t share JS variables automatically (unlike Go-routines or Java threads).
+* Communication is via **messages** (postMessage / parentPort).
+* You can also share memory explicitly using **SharedArrayBuffer** or `Atomics`.
+
+## 3) How to use Worker Threads (basic flow)
+
+// main.js
+const { Worker } = require('worker_threads');
+
+const worker = new Worker('./worker.js');
+
+worker.on('message', (msg) => {
+  console.log('From worker:', msg);
+});
+
+worker.postMessage('Hello Worker');
+
+// worker.js
+const { parentPort } = require('worker_threads');
+
+parentPort.on('message', (msg) => {
+  console.log('From main:', msg);
+  parentPort.postMessage('Got your message!');
+});
+
+* `new Worker(file)` → starts a new thread running `worker.js`.
+* Each has its own event loop; they talk with `postMessage`.
+* Messages are copied (structured clone algorithm), unless you use SharedArrayBuffer for sharing.
+
+## 4) Worker Threads vs Cluster vs Child Processes
+
+* **Cluster / Child Process**: spawn **separate processes** (own memory, own V8). They talk via OS IPC (slower).
+* **Worker Thread**: stays in the **same process**, lighter, faster communication.
+* **Thread Pool**: invisible to you, used by libuv for async native tasks.
+
+## 5) Worker Threads with Shared Memory
+
+You can avoid copying data back and forth by using **SharedArrayBuffer**.
+
+const { Worker } = require('worker_threads');
+
+const shared = new SharedArrayBuffer(1024); // 1KB memory
+const worker = new Worker('./worker.js', { workerData: shared });
+
+// worker.js
+const { workerData } = require('worker_threads');
+const arr = new Int32Array(workerData);
+
+arr[0] = 42; // modifies shared memory directly
+
+* Now both threads can read/write the same memory region.
+* Use **Atomics** to avoid race conditions (two threads writing at same time).
+
+## 6) When to use Worker Threads
+
+Use when:
+
+* CPU-bound tasks:
+
+  * image resizing
+  * encryption/compression
+  * data parsing / transformations
+  * machine learning inference
+* Not for simple I/O → those are already async via libuv thread pool.
+
+## 7) Internals — how Workers run under the hood
+
+* Each Worker = separate V8 isolate.
+* libuv spawns a new **native thread** for that worker.
+* That thread has its own event loop, heap, stack.
+* Main thread and worker thread communicate via **message channels** (backed by OS pipes + libuv async handles).
+* SharedArrayBuffer is truly shared in memory, bypassing copy.
