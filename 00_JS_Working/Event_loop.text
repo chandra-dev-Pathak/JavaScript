@@ -1,0 +1,126 @@
+** What is the Event Loop? **
+ 
+-- Think of it as a traffic cop for JavaScript’s single main thread:-
+- JS runs one thing at a time (single thread).
+- works like (timers, network, DOM events, file I/O) prepare in background
+- Event loop decides: which callback/continuation run next
+
+** The main pieces (same idea in browser & Node) **
+
+-- Call Stack
+- In stack js function are run, which are on top frame that are executed
+- When stack is empty, then event loop pick the next task
+
+-- Heap
+- Memory/storage for objects.
+
+-- Background/Host APIs
+- Browser: timers (setTimeout), fetch/XHR, DOM events, rAF, etc.
+- Node: libuv (timers, fs/network I/O threadpool), etc.
+- These all task prepare out of main js thread.
+
+-- Queues (very important)
+- Task / Macro-task queue: “big” tasks (e.g., setTimeout, setInterval, setImmediate (Node), I/O callbacks, postMessage, messageChannel, initial <script> run).
+- Microtask queue: “tiny, higher-priority” tasks — Promise callbacks (.then/.catch/.finally), queueMicrotask, MutationObserver.
+- Node special: process.nextTick = even higher priority than Promise microtasks.
+-Rule of thumb: After each task, event loop drains all microtasks (till empty) before moving on.
+
+** One full cycle (“tick”) in the browser **
+
+Imagine a round going on:-
+
+1. If the call stack is empty, event loop looks at task queues:
+- pick that one task First, the task whose turn is due(e.g., setTimeout whose delay elapsed)
+
+2. Run that task to completion:-
+- “Run to completion” = Synchronous code must be fully finished; No other task will come in between.
+
+3. Microtask checkpoint:-
+-- Now the event loop fully drains the microtask queue
+- Run all .then/.catch/.finally callbacks, queueMicrotask, MutationObservers.
+- If new Microtask are scheduled within these Microtask, Those too would be runs right now. 
+- This will continue until the Microtask queue is empty.
+
+4. Rendering opportunity (browser only):-
+
+-- Layout/recalc styles → paint → composite.
+-- requestAnimationFrame:- (rAF) Callbacks run slightly before paint (for the next frame).
+-- Note: Microtasks drain before painting; So if a Microtox "storm" hits, the rendering may be delayed (jank).
+
+5. Back to step 1 for the next task:-
+-- Key: Tasks → drain microtasks → render → repeat.
+
+-------------------------------------------------------------------------------------
+
+=============== Node.js event loop (phases) ================>>>>
+
+** Quick summary (one-liner) **
+
+Node’s event loop is a single-threaded scheduler (implemented by libuv) that runs your JavaScript callbacks in a set of ordered phases (timers → pending → idle/prepare → poll → check → close).Each phase processes its own queue; meanwhile Node also manages nextTick and microtask queues with special priority rules.
+
+** The phases (the ordered list) **
+
+-- timers → pending callbacks → idle/prepare → poll → check → close callbacks.
+
+This order is described in the official node docs — each box is a phase, and each phase has its own FIFO queue.
+
+** Phase-by-phase deep dive (with what runs where & why) **
+
+1) timers:-
+
+-- What lives here:- callbacks scheduled by setTimeout() and setInterval().
+
+-- How it works:- timer registers a threshold (earliest time it may run). Actual execution depends on when the loop reaches the timers phase and on other work already running. So setTimeout(fn, 0) means “run as soon as possible after the threshold (0) is passed”, not literally immediately.
+
+-- Important nuance: The poll phase controls when timers actually fire: if the event loop is in poll waiting for I/O, timers might be delayed — or the loop will wrap back to timers if a timer is ready. Example pattern is in the Node docs (explained with fs.readFile + setTimeout).
+
+-- Mini example:-
+
+const fs = require('fs');
+
+setTimeout(() => console.log('timer fired'), 100);
+fs.readFile('bigfile', () => {
+  // this I/O callback might run before the 100ms timer fires
+});
+
+If file read completes and its callback takes time, timer may run later than 100ms (OS scheduling + other callbacks cause delay).
+
+2) pending callbacks:-
+
+-- What lives here: certain system-level callbacks deferred to the next loop turn (e.g., some TCP errors or other specific OS-level callbacks). It’s essentially a special bucket for some I/O-related callbacks that couldn’t run immediately.
+
+3) idle, prepare:-
+
+-- What lives here: internal/libuv implementation hooks. Mostly internal and rarely something you use directly. libuv uses this phase for housekeeping before entering poll.
+
+4) poll ← Most important for I/O:-
+
+--Two main jobs:-
+
+1. Calculate how long to block (wait) for I/O (based on nearest timer, etc.).
+2. Process callbacks in the poll queue (I/O callbacks like fs, sockets, etc.) — most I/O callbacks are executed here (except timers, setImmediate, close callbacks).
+
+-- If poll queue is non-empty: it processes callbacks until empty or until a system-dependent limit.
+
+-- If poll queue is empty: two options:-
+
+    - If there are setImmediate() callbacks scheduled → stop poll and go to check phase (so setImmediate runs soon).
+
+    - If no setImmediate() scheduled → poll will block and wait for new I/O events (or until the next timer is due).
+
+-- Libuv detail: libuv has a hard maximum wait before it stops polling (system-dependent) so the loop doesn't remain blocked forever
+
+-- Why poll matters: If your program does I/O-heavy work or uses fs, net, etc., their callbacks are delivered here. Long-running poll callbacks can delay timers and setImmediate behavior.
+
+5) check:-
+
+-- What lives here: callbacks scheduled by setImmediate(). This phase runs right after poll when the poll phase becomes idle (or after poll empties and it decides to continue). setImmediate() is intended to run callbacks after I/O events in the current loop turn.
+
+-- Rule of thumb: If you schedule setImmediate() inside an I/O callback, setImmediate will usually run before a setTimeout(..., 0) scheduled in the same I/O callback. (Because of phase ordering: poll → check → timers).
+
+6) close callbacks:-
+
+-- What lives here: cleanup/close events like 'close' on sockets (close callbacks). Some close callbacks may be emitted here; others may be emitted via process.nextTick() depending on context.
+
+After this All phase event Loop Again check if any Work left so execute that if no works So after Some time its Again Start loop Check for taks.
+
