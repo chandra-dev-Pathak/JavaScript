@@ -1,0 +1,571 @@
+\===============  Execution Context ===========>>>>
+
+What is Execution Context:-
+
+* Execution Context is the environment in which JavaScript code is evaluated and executed.
+* It is an abstract concept that holds information about the environment within which the current code is being executed.
+* Whenever JS code runs, the JS Engine creates an Execution Context to manage the code execution.
+* It contains the scope, variables, functions, and the value of `this` relevant for that particular execution.
+* Think of Execution Context as the container or box where the whole code lives while running.
+
+Types of Execution Context:-
+
+1. Global Execution Context (GEC)
+2. Function Execution Context (FEC)
+3. Eval Execution Context (rarely used)
+
+Execution Context Lifecycle:-
+
+* Every Execution Context has two phases:
+
+1. Creation Phase
+2. Execution Phase
+
+Execution Context Internal Structure:-
+
+Every Execution Context has internally three main components:
+
+1. Variable Environment (VE)
+2. Lexical Environment (LE)
+3. this binding
+4. Scope Chain (not a separate component, but a feature of Lexical Environment)
+
+Advance:-
+
+1. Variable Environment (VE):-
+
+   1. Environment Record:-
+      1\. Declarative Environment Record (stores variables, functions inside a function)
+      2\. Object Environment Record (used in global context, maps variables to global object like `window`)
+
+   2. Outer Environment Reference (points to the outer scope for resolution)
+
+2. Lexical Environment (LE):-
+
+   1. Environment Record (stores identifier bindings)
+   2. Outer Lexical Environment Reference (connects to parent environment, enables Scope Chain)
+
+3. this binding:-
+
+   1. Global context → `this = window` (in browser) or `global` (in Node.js)
+   2. Object method call → `this = object`
+   3. Arrow function → `this` inherits from surrounding lexical scope
+   4. Strict mode → `this = undefined`
+
+\===============  Key Extra Notes ===========>>>>
+
+* Execution Context works with the Call Stack (Execution Stack). Whenever a function is called, a new Execution Context is created and pushed onto the stack. After execution, it is popped off.
+
+* The Scope Chain is a linked structure of Lexical Environments that enables variable lookup from inner to outer scope.
+
+* Execution Context is the backbone of how JavaScript handles code execution, scoping, and `this` behavior.
+
+* Without Execution Context, JS Engine cannot know how and where to resolve variables, functions, or bindings.
+
+========================================================================================
+------------------------- Now we break each topic in-Depth -----------------------------
+========================================================================================
+
+\=============== Module 1 — Global Execution Context (GEC) ===========>>>>
+
+## Definition:
+
+* The Global Execution Context (GEC) is the very first context created when JavaScript begins execution.
+
+* It represents the top-level environment of your code.
+
+* This is the root context of the program - all global variables/functions are accessed from here.
+
+* It stays at the bottom of the call stack for the lifetime of the program.
+
+## When and how it is created (Creation Phases):-
+
+* When the JS engine loads scripts/modules, there are two phases:-
+
+## Creation Phase of GEC:
+
+1. Global Object
+2. this set
+3. Memory allocation (Hoisting)
+
+1. The JavaScript engine creates a **Global Object** (in browsers = `window`, in Node.js = `global`, `Universal → globalThis`).'
+
+2. A special reference `this` is set:
+
+   * In browsers: `this` = `window`.
+   * In Node (script): `this` = `global`.
+   * In ES modules: top-level `this` = `undefined`.
+
+3. **Memory space allocation** happens:
+
+   * All function declarations are stored fully in memory.
+   * All `var` variables are hoisted and initialized with `undefined`.
+   * All `let` and `const` variables are placed in the **Temporal Dead Zone (TDZ)** (uninitialized).
+
+## Execution Phase:
+
+* Now the engine executes top-to-bottom code.
+* Variables get their assigned values.
+* Functions can be called, creating new Function Execution Contexts.
+
+## Structure inside GEC:
+
+* **Variable Environment (VE):** Holds variables and function declarations.(var/func)
+* **Lexical Environment (LE):** Maintains the outer reference and scope chain.(let/const)
+* **this binding:** Points to the global object or `undefined` depending on environment.
+
+## Global Environment Record Details:
+
+* Uses an **Object Environment Record** that maps variable names to properties of the global object.
+* Example: `var a = 10;` → creates `window.a` in browsers.
+* `let` and `const` at global scope are not added as properties of the global object.
+
+Examples:
+
+1. Using var:
+
+console.log(a); // undefined
+var a = 5;
+
+* During creation: `a` is set as `undefined`.
+* During execution: prints `undefined`, then assigns `5`.
+
+2. Using let:
+
+console.log(b); // ReferenceError
+let b = 10;
+
+* During creation: `b` is in TDZ.
+* Accessing before initialization throws error.
+
+3. Function hoisting:
+
+sayHi();
+function sayHi() {
+  console.log("Hello!");
+}
+
+* Entire function stored in memory.
+* Call works even before function declaration line.
+
+## `this` in Global Context:
+
+* Browser (non-strict script): `this === window`
+* Node.js script: `this === global`
+* ES modules: `this === undefined`
+* Use `globalThis` for a universal global reference.
+
+## Lifetime of GEC:
+
+* GEC is created once when program starts.
+* It remains until program (or page) ends.
+* All other contexts (functions) are created and destroyed on top of GEC.
+
+## Pitfalls:
+
+* Forgetting `var/let/const` → creates implicit global variables in sloppy mode.
+* Assuming `let`/`const` behave like `var` in global scope (they don’t attach to global object).
+* Misunderstanding `this` between script and module scope.
+
+Visual Diagram:
+
+Call Stack
+------------------
+|  Function ECs   |
+|  (created on    |
+|  function call) |
+------------------
+|  Global EC      |
+|  (base forever) |
+------------------
+
+==========================================================================================
+==========================================================================================
+
+
+\=============== Module 2 — Function Execution Context (FEC) ===========>>>>
+
+## Definition:
+
+* A Function Execution Context (FEC) is created each time a function is invoked/call.
+
+* Each Function call gets its own fresh Function Execution Context, even if the same function is called multiple times.
+
+* FEC lives temporarily on the call stack until the function finishes.
+
+## Lifecycle of a Function Execution Context (FEC):
+
+-Whenever a function is called, JavaScript creates a Function Execution Context (FEC).
+-It goes through two phases: Creation Phase and Execution Phase.
+
+# 1. Creation Phase (happens before code runs)
+
+   * In this phase, JavaScript prepares everything needed for the function to run.
+
+   * What happens step by step:-
+
+      1. New Lexical Environment created
+         * Stores function’s local variables (let/const), parameters, and inner functions.
+         * Links to the outer environment (scope chain).
+
+      2. arguments object created
+         * Only in normal functions (not in arrow functions).
+         * Contains array-like structure of passed arguments.
+
+         * Example:-
+         * function test(a, b) { console.log(arguments); }
+         * test(1, 2); // [1, 2]
+
+      3. Parameters initialized
+         * Each parameter gets the value from arguments or undefined if not passed.
+
+      4. Function declarations hoisted
+         * Whole function stored in memory, can be called before its definition line.
+
+      5. var declarations hoisted
+         * Created and set to undefined.
+         * Example:-
+         * console.log(x); // undefined
+         * var x = 10;
+
+      6. let and const created but not initialized
+         * Placed in Temporal Dead Zone (TDZ) until their declaration line is reached.
+         * Example:-
+         * console.log(y); // ReferenceError
+         * let y = 20;
+
+      7. this binding decided
+         * Normal call → this = globalThis (non-strict) / undefined (strict).
+         * Method call → this = object that owns the method.
+         * Constructor call (new) → this = newly created object.   
+
+# 2. Execution Phase (line by line execution)
+
+   * After setup, the engine now actually runs the code inside the function.
+
+      1. Code runs top-to-bottom.
+         * Assignments, expressions, function calls all happen here.
+      
+      2. Variables get real values.
+         * var variables that were undefined now take assigned values.
+         * let and const leave the TDZ and get initialized.
+
+      3. Inner functions / inner scopes created.
+         * If there are nested function calls, new FECs are created and pushed onto the call stack.
+
+      4. Return statement
+         * When a return is reached, control and value go back to the caller.
+         * The current FEC is removed from the call stack.
+
+   ***  Extra Deep Points (often missed)  ***
+
+   * Arrow functions don’t get their own this or arguments.
+      * They use the values from their enclosing(parent) scope.
+
+   * Closure:-
+      * If an inner function accesses variables from the parent FEC, those variables are kept alive in memory even after the parent FEC is popped from the call stack.
+
+   * Garbage Collection:-
+      After function execution, if no reference to its variables/functions remains (no closure), the FEC is destroyed and memory is freed.
+
+## Structure of FEC / 3 parts of the FEC (always formed)
+
+Whenever a function is called, JavaScript creates a Function Execution Context (FEC).
+Each FEC always has 3 main parts:
+
+#1. Lexical Environment (LE):-
+
+* Stores:- 
+   -- Function’s parameters
+   -- Local variables (declared with let/const)
+   -- Inner functions
+
+* Structure inside LE:-
+   * Environment Record → keeps actual variables/functions.
+   * Outer Environment Reference → link to parent scope (for scope chain).
+
+* In short:- LE = local scope + connection to outer scopes.
+
+#2. Variable Environment (VE):-
+
+* A special Lexical Environment only for var declarations.
+
+* Meaning:-
+      * Inside a function:
+            * var → stored in VE
+            * let / const → stored in LE
+
+* In short: VE handles only var, while LE handles let/const.
+
+#3. this Binding
+
+* Value of this depends on how the function is called:-
+
+      1. Normal call
+            * Non-strict mode → this = globalThis (window in browser / global in Node)
+            * Strict mode → this = undefined
+
+      2. Method call (called via object)
+            * obj.sayHi(); // this = obj
+
+      3. Constructor call (new) 
+            * this points to the newly created object.
+
+* In short: this is dynamic, decided at call-site.
+
+Examples:
+
+1. Basic Example:
+
+function add(x, y) {
+  var sum = x + y;
+  return sum;
+}
+
+add(2, 3);
+
+* New FEC created when `add` is called.
+* VE: { x:2, y:3, sum: undefined → 5 }
+* LE: references global scope.
+* this: depends on how `add` was called (default = global object, strict mode = undefined).
+
+2. Hoisting inside function:
+
+function test() {
+  console.log(a); // undefined
+  var a = 10;
+}
+test();
+
+* Creation: `a` hoisted with `undefined`.
+* Execution: prints `undefined`, then assigns 10.
+
+3. Arguments object:
+
+function show(a, b) {
+  console.log(arguments[0]); // value of a
+  console.log(arguments[1]); // value of b
+}
+show(5, 7);
+
+* `arguments` = {0:5, 1:7, length:2}.
+
+this Binding in Functions:
+
+1. Simple call: `this = globalThis` (non-strict), `undefined` (strict).
+2. Object method: `this = object`.
+3. Explicit binding: `func.call(obj)` sets `this = obj`.
+4. Constructor call: `new Func()` sets `this` to the new object.
+5. Arrow function: `this` is inherited from outer lexical environment.
+
+Visual Diagram:
+
+Call Stack
+------------------
+|  FEC (add)      |
+|  VE, LE, this   |
+------------------
+|  Global EC      |
+------------------
+
+==========================================================================================
+==========================================================================================
+
+\=============== Module 4 — Eval Execution Context (EEC) ===========>>>>
+
+## Definition:
+
+* The Eval Execution Context (EEC) is a special execution context created whenever the `eval()` function is called.
+
+* eval() is a JavaScript built-in function that takes code as a string and evaluates/executes at runtime.
+
+* If we call the same method repeatedly, each time a new context will be created, the code inside it will run, and then it will be popped.
+
+* Meaning if you enter the string "2+2", the JavaScript engine will understand it as code and run it.
+
+* Example:-
+   eval("var x = 10; console.log(x);");
+
+* When run, a temporary execution context is created specifically for this code.
+
+## When it is Created:-
+
+* Whenever eval() function is called, JavaScript engine creates an Eval Execution Context.
+
+* This context is temporary → comes in the call stack and gets popped immediately after the work is completed.
+
+## Types of Eval:
+
+1. Direct eval:
+
+   * When `eval()` is called directly.
+   * Code executes in the current lexical scope.
+
+   let a = 5;
+   eval("console.log(a);"); // prints 5
+
+   * Here eval is called directly → its code is executed within the current scope only.
+   * Meaning if you call in global → global scope, if you call within a function → function scope.
+
+2. Indirect eval:
+
+   * When `eval` is aliased or called indirectly.
+   * Code executes in the global scope.
+
+   let e = eval;
+   e("var y = 20;");
+   console.log(y); // 20 but → create in Global scope
+
+   * If you call eval by assigning it to a variable → it will always run in global scope.
+   * Meaning even if you call it inside a function, its code will be executed in global context.
+
+## Lifecycle of Eval Execution Context:
+
+1. Creation Phase:
+
+   1. Environment Record:-
+      * If eval is written in global scope then its variables are added to global scope.
+
+      * If eval is written inside a function then variables are created within the scope of that function only
+
+   2. this binding:-
+      * If eval is run in global context → this = globalThis.
+      * If the function is run in context → our function will inherit this.
+
+   3. Hoisting rules apply:-
+      *Var gets hoisted.
+      *let/Const are in TDZ.
+      *Functions are hoisted.
+
+2. Execution Phase:
+
+   * Code string is executed line by line.
+   * Variables may leak into current/global scope depending on mode.
+
+## Strict vs Non-Strict Mode in Eval:
+
+* Non-strict mode: Variables declared in `eval` can leak into the enclosing scope.
+
+  eval("var x = 100;");
+  console.log(x); // 100 → leaked to outer scope
+
+* **Strict mode:** `eval` creates its own isolated variable environment.
+
+  "use strict";
+  eval("var y = 200;");
+  console.log(typeof y); // undefined
+
+## Why Eval is Dangerous:
+
+* Performance hit (engine cannot optimize well when using `eval`).
+* Security risk (arbitrary code execution → XSS attacks).
+* Harder to debug and maintain.
+
+## Best Practices:
+
+* Avoid using `eval()` whenever possible.
+* Prefer safer alternatives like `JSON.parse`, `Function` constructors, or proper dynamic code structures.
+
+Visual Diagram:
+
+Call Stack (with eval)
+---------------------
+|  Eval EC           |
+|  (temporary)       |
+---------------------
+|  Current EC (func) |
+---------------------
+|  Global EC         |
+---------------------
+
+
+==============================================================================
+=============== Flow of how Code Start to End executed ==================>>>>>
+==============================================================================
+
+### STEP 1 — Source load & classification ###
+
+1. Host loads your code
+   * The browser or node passes your source (file, inline script, or model) to the engine.
+
+2. Engine decides “Script” vs “Module”
+   * <script> → Script
+   * <script type="module"> / .mjs / ES module loader → Module
+
+3. Set strictness 
+   * Script: by default sloppy mode; "use strict" likhoge to strict ho jayega.
+   * Module: always strict (even without "use strict").
+
+4. Parsing (syntax analysis)
+   * The engine creates AST by tokenizing + parsing the code.
+   * At this stage it collects all the top-level declarations (var/let/const/functions/classes) so that correct memory/layout can be created during creation phase.
+
+5. Why this step matters?
+   * Only after deciding “Script vs Module” its behavior, import/export, TDZ/hoisting scope, and global attachment (whether property is created on window or not) becomes clear.
+   * Without the list of parsed declarations, correct hoisting/TDZ setup cannot be done in engine creation phase.
+
+--------------------------------------------------------------------------------------
+
+### STEP 2 — Global Execution Context (GEC) Creation Phase ###
+
+* First, GEC is Created. This occurs at the base of the call stack, and remains until the program ends.
+
+* This is the step that happens before execution starts. The engine just sets up the memory and environment.
+
+1. Global Object is created / linked
+   * Browser → window
+   * Node.js → global
+   * Universal → globalThis
+
+2. this binding has been decided
+   * Script (non-strict) → this = global object (window/global)
+   * Script (strict mode) → this = undefined
+   * Module (ESM) → always this = undefined
+
+3. Memory is allocated (Hoisting)
+   * Function declarations → The whole function is stored in memory (ready for call).
+   * var variables → when created at this point default is set to undefined.
+   * let / const variables → are created but are kept in TDZ (Temporal Dead Zone) -> They will be initialized when the code comes to their line.
+
+4. Environment is created
+
+   * Variable Environment (VE) → Here var and functions are stored. It is linked to the global object (like window.a is created if var a = 10).
+   * Lexical Environment (LE) → Here let / const are stored. It does not become a global object property.
+   * Outer Environment Reference is also set (start point of scope chain).
+
+--------------------------------------------------------------------------------------
+
+### STEP 3 — Global Execution Context (GEC) Execution Phase ###
+
+* Till now(creation phase) only memory setup + hoisting has happened.
+* Now the engine runs the code line by line.
+
+1. Top-to-Bottom Execution
+   * The engine runs the code sequentially → first line → next line → … end tak.
+   
+2. Assignments & Calculations
+   * Variables that were previously "undefined" or in TDZ in memory now they take the values.
+   * The let/const emerge(out) from the TDZ when the engine reaches their line.
+
+3. Function Calls
+   * When a function is called:
+   * A new Function Execution Context (FEC) is created.
+   * This FEC follows Creation Phase + Execution Phase (same process in small scope) within itself.
+   * This FEC is pushed onto the call stack, and when it work completes, it gets popped.
+
+4. Scope Chain is resolved
+   * If the value of a variable is required and not found in the current LE/VE → the engine checks the outer environments (parent scope). This process continues until the global scope is reached.
+
+5. Program Flow
+   * Statements are executed.
+   * Function are call / return.
+   * create Objects/arrays.
+   * Control flow (if, for, while) are handle.
+
+--------------------------------------------------------------------------------------
+
+### STEP 4 — End of Program ###
+
+* When all the code is run, only GEC remains in the call stack.
+* The GEC is destroyed as soon as the page or program is closed.
+
